@@ -24,7 +24,10 @@ namespace ResilientOwners
             //create data object
 			m_infoObject = new GameObject("ResilientBuildings");
 			m_info = m_infoObject.AddComponent<ResilientBuildings>();
-			m_info.InitializeList();
+			if(BookKeeper.s_data != null)
+				m_info.m_resilients = BookKeeper.s_data;
+			else
+				m_info.InitializeList();
 
 			//add mod's components to the UI
 			m_UI = ResilientUI.Install(m_info);

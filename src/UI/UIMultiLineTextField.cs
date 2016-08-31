@@ -1039,6 +1039,7 @@ namespace ResilientOwners
 					this.Invalidate();
 				}
 				this.m_CursorShown = false;
+				this.Invalidate();
 			}
 			yield break;
 		}
@@ -2077,18 +2078,27 @@ namespace ResilientOwners
 		}
 
 		private Vector3 m_InitialRelativePosition = Vector3.zero;
+		public void FixPositionAndActivateAutoHeight()
+		{
+			m_InitialRelativePosition = relativePosition;
+			m_autoAdjustHeight = true;
+			this.Invalidate ();
+		}
+
+		bool m_autoAdjustHeight = false;
+		float m_lastHeight = 0f;
 		void AutoHeight()
 		{
-//			if(m_InitialRelativePosition == Vector3.zero)
-//				m_InitialRelativePosition = relativePosition;
-//			else
-//				relativePosition = m_InitialRelativePosition;
+			if (!m_autoAdjustHeight)
+				return;
+
+			relativePosition = m_InitialRelativePosition;
 			float total_height = 0f;
 			if(m_showTitle)
 			{
 				total_height += m_dummyTextField.height;
 				m_dummyTextField.relativePosition = new Vector3(-5f, -total_height, 0f);
-				//relativePosition = new Vector3(relativePosition.x, relativePosition.y + (int) total_height, relativePosition.z);
+				relativePosition += new Vector3(0, (int) total_height, 0);
 			}
 			else
 				this.m_Padding.top = 0;
@@ -2096,6 +2106,11 @@ namespace ResilientOwners
 			total_height += stringAreaSize.y;
 
 			this.height = stringAreaSize.y;
+
+			if (m_lastHeight != total_height) {
+				m_lastHeight = total_height;
+				this.Invalidate();
+			}
 
 			eventHeightChange(this, this.height);
 		}

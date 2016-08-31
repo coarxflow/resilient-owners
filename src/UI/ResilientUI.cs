@@ -91,7 +91,9 @@ namespace ResilientOwners
 				SaveDescription(param);
 			};
 			m_descriptionTextField.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_descriptionTextField.relativePosition += new Vector3 (10f, 40f, 0f);
+			m_descriptionTextField.relativePosition += new Vector3 (10f, 30f, 0f);
+			m_descriptionTextField.FixPositionAndActivateAutoHeight();
+			//m_descriptionTextField.relativePosition += new Vector3 (10f, 40f, 0f);
 
 			m_descriptionTextField.title = "Description";
 			m_descriptionTextField.showTitle = true;
@@ -106,11 +108,27 @@ namespace ResilientOwners
 //			tf2.AlignTo (zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
 
 			UIMultiStateButton msb = m_zonedBuildingInfoPanel.component.AddUIComponent<UIMultiStateButton> ();
+
+			int spriteWidth = 32;
+			int spriteHeight = 32;
+			string[] spriteNames = {
+				"ResilientDisabled", 
+				"ResilientEnabled"
+			};
+
+			UITextureAtlas atlas = CreateTextureAtlas("icons.book.png", "ResilientUI", msb.atlas.material, spriteWidth, spriteHeight, spriteNames);
 			msb.name = "Resilient MultiStateButton";
+
+			msb.atlas = atlas;
+			msb.backgroundSprites[0].normal = "ResilientDisabled";
 			msb.backgroundSprites.AddState();
-			msb.backgroundSprites[0].normal = "TextFieldPanel";
-			msb.backgroundSprites.AddState();
-			msb.backgroundSprites[1].normal = "TextFieldPanelHovered";
+			msb.foregroundSprites.AddState();
+			msb.backgroundSprites[1].normal = "ResilientEnabled";
+			msb.backgroundSprites[1].pressed = "ResilientEnabled";
+			msb.backgroundSprites[1].hovered = "ResilientEnabled";
+			msb.backgroundSprites[1].focused = "ResilientEnabled";
+			//msb.foregroundSprites[2].normal = "ResilientEnabled";
+			msb.tooltip = "Resilient Owners toggle";
 			msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
 			msb.eventActiveStateIndexChanged += (component, value) => {
 				CODebug.Log(LogChannel.Modding, "multistate button in state "+value);
@@ -126,20 +144,6 @@ namespace ResilientOwners
 
 			m_zonedBuildingInfoPanelInitialHeight = m_zonedBuildingInfoPanel.component.height;
 
-//			UIButton tabTemplate = (UIButton)builtinTabstrip.tabs[0];
-
-//			int spriteWidth = 31;
-//			int spriteHeight = 31;
-//			string[] spriteNames = {
-//				"CrossingsButtonBg", 
-//				"CrossingsButtonBgPressed", 
-//				"CrossingsButtonBgHovered", 
-//				"CrossingsIcon", 
-//				"CrossingsIconPressed", 
-//			};
-//
-//			UITextureAtlas atlas = CreateTextureAtlas("sprites.png", "CrossingsUI", tabTemplate.atlas.material, spriteWidth, spriteHeight, spriteNames);
-//
 		}
 
 		/********** Event Handlers ***************/
@@ -218,9 +222,10 @@ namespace ResilientOwners
 			Texture2D tex = new Texture2D(spriteWidth * spriteNames.Length, spriteHeight, TextureFormat.ARGB32, false);
 			tex.filterMode = FilterMode.Bilinear;
 
+			try
 			{ // LoadTexture
 				System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-				System.IO.Stream textureStream = assembly.GetManifestResourceStream("Crossings." + textureFile);
+				System.IO.Stream textureStream = assembly.GetManifestResourceStream("ResilientOwners." + textureFile);
 
 				byte[] buf = new byte[textureStream.Length];  //declare arraysize
 				textureStream.Read(buf, 0, buf.Length); // read from stream to byte array
@@ -228,16 +233,26 @@ namespace ResilientOwners
 				tex.LoadImage(buf);
 
 				tex.Apply(true, true);
+				tex.width /= spriteNames.Length;
+			}
+			catch
+			{
+				CODebug.Log(LogChannel.Modding, "error opening texture file");
 			}
 
 			UITextureAtlas atlas = ScriptableObject.CreateInstance<UITextureAtlas>();
 
+			try
 			{ // Setup atlas
 				Material material = (Material)Material.Instantiate(baseMaterial);
 				material.mainTexture = tex;
 
 				atlas.material = material;
 				atlas.name = atlasName;
+			}
+			catch
+			{
+				CODebug.Log(LogChannel.Modding, "error setting texture");
 			}
 
 			// Add sprites

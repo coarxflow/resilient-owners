@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{EC2B4B01-9506-489D-BF6F-6478DDE47F49}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ResilientOwners</RootNamespace>
+    <AssemblyName>ResilientOwners</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>False</Optimize>
+    <OutputPath>..\bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="xcopy /Y &quot;C:\Users\Loïc\Documents\mods\ResilientOwners\bin\${ProjectConfigName}\${SolutionName}.dll&quot; &quot;C:\Users\Loïc\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\${SolutionName}.dll&quot;" workingdir="${ProjectDir}" externalConsole="True" />
+        <Command type="BeforeBuild" command="cmd /c &quot;IF EXIST 'C:\Users\Loïc\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\${SolutionName}.dll')&quot;" workingdir="${ProjectDir}" externalConsole="True" />
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>none</DebugType>
+    <Optimize>True</Optimize>
+    <OutputPath>..\bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>False</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="ICities">
+      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
+    </Reference>
+    <Reference Include="ColossalManaged">
+      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\Mod.cs" />
+    <Compile Include="src\Extensions\LevelUpExtension.cs" />
+    <Compile Include="src\Extensions\LoadingExtension.cs" />
+    <Compile Include="src\Extensions\ResilientExpresser.cs" />
+    <Compile Include="src\UI\UIMultiLineTextField.cs" />
+    <Compile Include="src\Data\ResilientBuildings.cs" />
+    <Compile Include="src\UI\ResilientUI.cs" />
+    <Compile Include="src\Extensions\BookKeeper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\" />
+    <Folder Include="src\Extensions\" />
+    <Folder Include="src\UI\" />
+    <Folder Include="src\Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\book.png" />
+  </ItemGroup>
+</Project>
