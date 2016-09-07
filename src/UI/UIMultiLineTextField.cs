@@ -1630,6 +1630,7 @@ namespace ResilientOwners
 		
 		protected override void OnRebuildRenderData()
 		{
+			this.CheckDefaultText();
 			if (base.atlas == null || base.font == null || !base.font.isValid)
 			{
 				return;
@@ -1647,7 +1648,7 @@ namespace ResilientOwners
 			base.textRenderData.material = base.atlas.material;
 			this.RenderBackground();
 			this.RenderText();
-			AutoHeight();
+			this.AutoHeight();
 		}
 		
 		private string PasswordDisplayText()
@@ -2119,5 +2120,30 @@ namespace ResilientOwners
 
 		public event HeightChangedEventHandler eventHeightChange;
 
+		//default text handling
+		public string m_defaultText;
+		public string defaultText{
+			get {
+				return m_defaultText;
+			}
+			set {
+				m_defaultText = value;
+			}
+		}
+
+		void CheckDefaultText()
+		{
+			if(text.Length == 0)
+			{
+				text = defaultText;
+				selectOnFocus = true;
+				textColor = Color.gray;
+			}
+			else
+			{
+				selectOnFocus = false;
+				textColor = Color.black;
+			}
+		}
 	}
 }

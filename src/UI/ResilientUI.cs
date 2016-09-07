@@ -9,6 +9,7 @@
 //------------------------------------------------------------------------------
 using System;
 using System.Reflection;
+using System.Collections;
 using UnityEngine;
 using ColossalFramework;
 using ColossalFramework.Globalization;
@@ -25,7 +26,9 @@ namespace ResilientOwners
 		float m_zonedBuildingInfoPanelInitialHeight = 0f;
 
 		UIMultilineTextField m_descriptionTextField;
-		UICheckBox m_resilientCheckBox;
+		StateButton m_resilientStateButton;
+		UILabel m_familiesHistoryLabel;
+		UILabel m_activatedDateLabel;
 
 		ushort m_currentSelectedBuildingID;
 
@@ -51,29 +54,6 @@ namespace ResilientOwners
 		void AddComponents()
 		{
 
-			m_resilientCheckBox = m_zonedBuildingInfoPanel.component.AttachUIComponent(UITemplateManager.GetAsGameObject("OptionsCheckBoxTemplate")) as UICheckBox;
-			m_resilientCheckBox.name = "ModTools Button";
-			m_resilientCheckBox.text = "Toggle Resilient";
-            //button.textScale = 0.8f;
-			m_resilientCheckBox.width = 120;
-			m_resilientCheckBox.height = 40;
-//            button.normalBgSprite = "ButtonMenu";
-//            button.disabledBgSprite = "ButtonMenuDisabled";
-//            button.hoveredBgSprite = "ButtonMenuHovered";
-//            button.focusedBgSprite = "ButtonMenu";
-//            button.pressedBgSprite = "ButtonMenuPressed";
-//            button.textColor = new Color32(255, 255, 255, 255);
-//            button.disabledTextColor = new Color32(7, 7, 7, 255);
-//            button.hoveredTextColor = new Color32(255, 255, 255, 255);
-//            button.focusedTextColor = new Color32(255, 255, 255, 255);
-//            button.pressedTextColor = new Color32(30, 30, 44, 255);
-			m_resilientCheckBox.eventCheckChanged += (component, param) =>
-			{
-				ToogleResilient(param);
-			};
-			m_resilientCheckBox.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
-            //button.relativePosition += offset;
-
 			m_descriptionTextField = m_zonedBuildingInfoPanel.component.AddUIComponent<UIMultilineTextField> ();
 			m_descriptionTextField.name = "Building Description";
 			m_descriptionTextField.text = "Enter description";
@@ -84,7 +64,6 @@ namespace ResilientOwners
 //			textfield.disabledBgSprite = "ButtonMenuDisabled";
 //			textfield.hoveredBgSprite = "ButtonMenuHovered";
 //			textfield.focusedBgSprite = "ButtonMenu";
-			m_descriptionTextField.textColor = new Color32(255, 255, 255, 255);
 			m_descriptionTextField.disabledTextColor = new Color32(7, 7, 7, 255);
 			m_descriptionTextField.eventTextSubmitted += (component, param) =>
 			{
@@ -97,49 +76,74 @@ namespace ResilientOwners
 
 			m_descriptionTextField.title = "Description";
 			m_descriptionTextField.showTitle = true;
+			m_descriptionTextField.defaultText = Localization.GetDescriptionEmpty();
 
 			m_descriptionTextField.eventHeightChange += (component, height) => {
 				ResizePanelHeight(height);
 			};
 
-//			UITextField tf2 = (UITextField) GameObject.Instantiate(zonedBuildingInfoPanel.Find<UITextField>("BuildingName"));
-//
-//			tf2.text = "Je suis la";
-//			tf2.AlignTo (zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-
-			UIMultiStateButton msb = m_zonedBuildingInfoPanel.component.AddUIComponent<UIMultiStateButton> ();
-
 			int spriteWidth = 32;
 			int spriteHeight = 32;
 			string[] spriteNames = {
 				"ResilientDisabled", 
-				"ResilientEnabled"
+				"ResilientEnabled",
+				"Resilient+"
 			};
+			m_resilientStateButton = new StateButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, spriteNames, "icons.book.png");
 
-			UITextureAtlas atlas = CreateTextureAtlas("icons.book.png", "ResilientUI", msb.atlas.material, spriteWidth, spriteHeight, spriteNames);
-			msb.name = "Resilient MultiStateButton";
+			m_resilientStateButton.msb.eventActiveStateIndexChanged += (component, value) => {
 
-			msb.atlas = atlas;
-			msb.backgroundSprites[0].normal = "ResilientDisabled";
-			msb.backgroundSprites.AddState();
-			msb.foregroundSprites.AddState();
-			msb.backgroundSprites[1].normal = "ResilientEnabled";
-			msb.backgroundSprites[1].pressed = "ResilientEnabled";
-			msb.backgroundSprites[1].hovered = "ResilientEnabled";
-			msb.backgroundSprites[1].focused = "ResilientEnabled";
-			//msb.foregroundSprites[2].normal = "ResilientEnabled";
-			msb.tooltip = "Resilient Owners toggle";
-			msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-			msb.eventActiveStateIndexChanged += (component, value) => {
+				if(!m_allowEvents)
+					return;
+
 				CODebug.Log(LogChannel.Modding, "multistate button in state "+value);
 
+				switch(value)
+				{
+				case 0:
+					m_info.UnsuscribeBuilding(m_currentSelectedBuildingID);
+					HideHistory();
+					break;
+				case 1:
+					m_info.AddBuilding(m_currentSelectedBuildingID, false);
+					ShowHistory();
+					break;
+				case 2:
+					m_info.AddBuilding(m_currentSelectedBuildingID, true);
+					ShowHistory();
+					break;
+				}
 			};
-			//msb.relativePosition += new Vector3 (100f, 50f, 0f);
+			m_resilientStateButton.msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
+			m_resilientStateButton.msb.relativePosition += new Vector3 (-50f, 50f, 0f);
 
+			m_familiesHistoryLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_familiesHistoryLabel.name = "Families History";
+			m_familiesHistoryLabel.text = Localization.GetEmptyHouse();
+			m_familiesHistoryLabel.textScale = 0.8f;
+			m_familiesHistoryLabel.width = m_zonedBuildingInfoPanel.component.width/3;
+			//m_familiesHistoryLabel.wordWrap = true;
+			m_familiesHistoryLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
+			m_familiesHistoryLabel.relativePosition += new Vector3 (-m_familiesHistoryLabel.width, 30f, 0f);
+
+			m_activatedDateLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_activatedDateLabel.name = "Activation Date";
+			m_activatedDateLabel.text = Localization.GetActivationDate();
+			m_activatedDateLabel.textScale = 0.8f;
+			m_activatedDateLabel.width = m_zonedBuildingInfoPanel.component.width/3;
+			m_activatedDateLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
+			m_activatedDateLabel.relativePosition += new Vector3 (-m_familiesHistoryLabel.width, 60f, 0f);
 
 			m_zonedBuildingInfoPanel.component.eventVisibilityChanged +=(component, param) =>
 			{
-				OnSelected();
+				if(param)
+					m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
+			};
+
+			m_zonedBuildingInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
+			{
+				if(m_zonedBuildingInfoPanel.component.isVisible)
+					m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
 			};
 
 			m_zonedBuildingInfoPanelInitialHeight = m_zonedBuildingInfoPanel.component.height;
@@ -149,25 +153,6 @@ namespace ResilientOwners
 		/********** Event Handlers ***************/
 
 		bool m_allowEvents = true;
-		void ToogleResilient(bool on)
-		{
-			if (!m_allowEvents)
-				return;
-			if (m_currentSelectedBuildingID != 0)
-			{
-				if(m_info.GetResilientBuildingIndex(m_currentSelectedBuildingID) != -1 && !on)
-					m_info.RemoveBuilding(m_currentSelectedBuildingID);
-				else if(on)
-					m_info.AddBuilding(m_currentSelectedBuildingID);
-				//					if (this.baseBuildingWindow != null && this.enabled && isVisible && Singleton<BuildingManager>.exists && ((Singleton<SimulationManager>.instance.m_currentFrameIndex & 15u) == 15u || selectedBuilding != building))
-				//					{
-				//						BuildingManager instance = Singleton<BuildingManager>.instance;
-				//						this.UpdateBuildingInfo(building, instance.m_buildings.m_buffer[(int)building]);
-				//						selectedBuilding = building;
-				//					}
-			}
-		}
-
 		void SaveDescription(string desc)
 		{
 			if (!m_allowEvents)
@@ -182,14 +167,15 @@ namespace ResilientOwners
 
 		/********** UI update methods ***************/
 
-		void OnSelected()
+		IEnumerator OnSelected()
 		{
-			//get selected building ID
-			var buildingInfo = UIView.Find<UIPanel>("(Library) ZonedBuildingWorldInfoPanel");
-			ZonedBuildingWorldInfoPanel baseBuildingWindow = buildingInfo.gameObject.transform.GetComponentInChildren<ZonedBuildingWorldInfoPanel>();
-			FieldInfo baseSub = baseBuildingWindow.GetType().GetField("m_InstanceID", BindingFlags.NonPublic | BindingFlags.Instance);
-			InstanceID instanceId = (InstanceID)baseSub.GetValue(baseBuildingWindow);
+			yield return new WaitForEndOfFrame();
+			//get selected building ID (after waiting it has been actualized)
+			FieldInfo baseSub = m_zonedBuildingInfoPanel.GetType().GetField("m_InstanceID", BindingFlags.NonPublic | BindingFlags.Instance);
+			InstanceID instanceId = (InstanceID)baseSub.GetValue(m_zonedBuildingInfoPanel);
 			if (instanceId.Type == InstanceType.Building && instanceId.Building != 0) {
+				if(m_currentSelectedBuildingID == instanceId.Building) //no update needed
+					yield break;
 				m_currentSelectedBuildingID = instanceId.Building;
 			} else
 				m_currentSelectedBuildingID = 0;
@@ -197,16 +183,41 @@ namespace ResilientOwners
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 			m_allowEvents = false;
 			if (buildIndex != -1) {
-				m_resilientCheckBox.isChecked = true;
-				m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
-				m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight + m_descriptionTextField.height;
-				//m_descriptionTextField.isVisible = true;
+				if(m_info.m_resilients[buildIndex].resiliencyActivated)
+					m_resilientStateButton.SetState(2);
+				else
+					m_resilientStateButton.SetState(1);
+				ShowHistory();
 			} else {
-				m_resilientCheckBox.isChecked = false;
-				//m_descriptionTextField.isVisible = false;
+				m_resilientStateButton.SetState(0);
+				HideHistory();
 			}
 
 			m_allowEvents = true;
+
+			m_zonedBuildingInfoPanel.component.Invalidate();
+		}
+
+		public void HideHistory()
+		{
+			m_descriptionTextField.isVisible = false;
+			m_familiesHistoryLabel.isVisible = false;
+			m_activatedDateLabel.isVisible = false;
+			ResizePanelHeight(0);
+		}
+
+		public void ShowHistory()
+		{
+			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
+
+			m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
+			m_descriptionTextField.isVisible = true;
+
+			m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
+			m_familiesHistoryLabel.isVisible = true;
+
+			m_activatedDateLabel.text = Localization.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("dd/MM/yyyy");
+			m_activatedDateLabel.isVisible = true;
 		}
 
 		public void ResizePanelHeight(float desc_height)
@@ -214,62 +225,6 @@ namespace ResilientOwners
 			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight + desc_height;
 		}
 
-
-		/*********** custom icons *************/
-
-		UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight, string[] spriteNames) {
-
-			Texture2D tex = new Texture2D(spriteWidth * spriteNames.Length, spriteHeight, TextureFormat.ARGB32, false);
-			tex.filterMode = FilterMode.Bilinear;
-
-			try
-			{ // LoadTexture
-				System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-				System.IO.Stream textureStream = assembly.GetManifestResourceStream("ResilientOwners." + textureFile);
-
-				byte[] buf = new byte[textureStream.Length];  //declare arraysize
-				textureStream.Read(buf, 0, buf.Length); // read from stream to byte array
-
-				tex.LoadImage(buf);
-
-				tex.Apply(true, true);
-				tex.width /= spriteNames.Length;
-			}
-			catch
-			{
-				CODebug.Log(LogChannel.Modding, "error opening texture file");
-			}
-
-			UITextureAtlas atlas = ScriptableObject.CreateInstance<UITextureAtlas>();
-
-			try
-			{ // Setup atlas
-				Material material = (Material)Material.Instantiate(baseMaterial);
-				material.mainTexture = tex;
-
-				atlas.material = material;
-				atlas.name = atlasName;
-			}
-			catch
-			{
-				CODebug.Log(LogChannel.Modding, "error setting texture");
-			}
-
-			// Add sprites
-			for (int i = 0; i < spriteNames.Length; ++i) {
-				float uw = 1.0f / spriteNames.Length;
-
-				var spriteInfo = new UITextureAtlas.SpriteInfo() {
-					name = spriteNames[i],
-					texture = tex,
-					region = new Rect(i * uw, 0, uw, 1),
-				};
-
-				atlas.AddSprite(spriteInfo);
-			}
-
-			return atlas;
-		}
 	
 
 	}
