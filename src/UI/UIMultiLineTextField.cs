@@ -853,6 +853,7 @@ namespace ResilientOwners
 		
 		protected override void OnLostFocus(UIFocusEventParameter p)
 		{
+			CODebug.Log(LogChannel.Modding, "OnLostFocus");
 			//base.OnLostFocus(p);
 //			if (!this.m_FocusForced)
 //			{
@@ -876,6 +877,8 @@ namespace ResilientOwners
 		{
 			base.OnLostFocus(p);
 			base.OnLeaveFocus(p);
+
+			CODebug.Log(LogChannel.Modding, "OnLeaveFocus");
 
 			if (!this.m_FocusForced)
 			{
@@ -1037,6 +1040,7 @@ namespace ResilientOwners
 					yield return new WaitForSeconds(this.cursorBlinkTime);
 					this.m_CursorShown = !this.m_CursorShown;
 					this.Invalidate();
+					this.m_retainFocus = UIView.ContainsFocus(this);
 				}
 				this.m_CursorShown = false;
 				this.Invalidate();
@@ -2093,27 +2097,26 @@ namespace ResilientOwners
 			if (!m_autoAdjustHeight)
 				return;
 
-			relativePosition = m_InitialRelativePosition;
+			//relativePosition = m_InitialRelativePosition;
 			float total_height = 0f;
 			if(m_showTitle)
 			{
 				total_height += m_dummyTextField.height;
 				m_dummyTextField.relativePosition = new Vector3(-5f, -total_height, 0f);
-				relativePosition += new Vector3(0, (int) total_height, 0);
+				//relativePosition += new Vector3(0, (int) total_height, 0);
 			}
 			else
 				this.m_Padding.top = 0;
 			
 			total_height += stringAreaSize.y;
 
-			this.height = stringAreaSize.y;
+			//this.height = stringAreaSize.y;
 
 			if (m_lastHeight != total_height) {
 				m_lastHeight = total_height;
 				this.Invalidate();
+				eventHeightChange(this, this.height);
 			}
-
-			eventHeightChange(this, this.height);
 		}
 
 		public delegate void HeightChangedEventHandler (UIComponent component, float height);
@@ -2133,7 +2136,7 @@ namespace ResilientOwners
 
 		void CheckDefaultText()
 		{
-			if(text.Length == 0)
+			if(text.Length == 0 || text.Equals(defaultText))
 			{
 				text = defaultText;
 				selectOnFocus = true;
@@ -2142,7 +2145,7 @@ namespace ResilientOwners
 			else
 			{
 				selectOnFocus = false;
-				textColor = Color.black;
+				textColor = Color.white;
 			}
 		}
 	}

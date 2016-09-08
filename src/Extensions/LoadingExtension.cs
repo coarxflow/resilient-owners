@@ -30,12 +30,13 @@ namespace ResilientOwners
 				m_info.InitializeList();
 
 			//add mod's components to the UI
-			m_UI = ResilientUI.Install(m_info);
+			m_UI = ResilientUI.Install(m_infoObject, m_info);
 
 			//bind objects
 			BookKeeper.s_info = m_info;
 			LevelUpExtension.s_info = m_info;
 			ResilientExpresser.s_info = m_info;
+			IncomeTracker.s_info = m_info;
 
 			CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");
 		}

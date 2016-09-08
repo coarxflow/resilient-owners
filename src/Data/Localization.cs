@@ -16,6 +16,12 @@ namespace ResilientOwners
 			return "Activation date : ";
 		}
 
+		//stats label
+		public static string GetAccumulatedIncome()
+		{
+			return "AccumulatedIncome : ";
+		}
+
 		//families history label
 		public static string GetEmptyHouse()
 		{

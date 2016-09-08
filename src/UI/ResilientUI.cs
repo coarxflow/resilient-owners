@@ -17,7 +17,7 @@ using ColossalFramework.UI;
 
 namespace ResilientOwners
 {
-	public class ResilientUI
+	public class ResilientUI : MonoBehaviour
 	{
 
 		ResilientBuildings m_info;
@@ -29,12 +29,16 @@ namespace ResilientOwners
 		StateButton m_resilientStateButton;
 		UILabel m_familiesHistoryLabel;
 		UILabel m_activatedDateLabel;
+		UILabel m_statsLabel;
+
+		UICurrencyWrapper income =  new UICurrencyWrapper(0L);
 
 		ushort m_currentSelectedBuildingID;
 
-		public static ResilientUI Install(ResilientBuildings info)
+		public static ResilientUI Install(GameObject go, ResilientBuildings info)
 		{
-			ResilientUI rui = new ResilientUI();
+			ResilientUI rui =go.AddComponent<ResilientUI>();
+			//ResilientUI rui = new ResilientUI();
 			rui.m_info = info;
 
 			rui.m_zonedBuildingInfoPanel = GameObject.Find("(Library) ZonedBuildingWorldInfoPanel").GetComponent<ZonedBuildingWorldInfoPanel>();
@@ -58,8 +62,8 @@ namespace ResilientOwners
 			m_descriptionTextField.name = "Building Description";
 			m_descriptionTextField.text = "Enter description";
 			m_descriptionTextField.textScale = 0.8f;
-			m_descriptionTextField.width = m_zonedBuildingInfoPanel.component.width/3;
-			m_descriptionTextField.height = 70;
+			m_descriptionTextField.width = m_zonedBuildingInfoPanel.component.width/2;
+			//m_descriptionTextField.height = 70;
 //			textfield.normalBgSprite = "ButtonMenu";
 //			textfield.disabledBgSprite = "ButtonMenuDisabled";
 //			textfield.hoveredBgSprite = "ButtonMenuHovered";
@@ -121,29 +125,34 @@ namespace ResilientOwners
 			m_familiesHistoryLabel.name = "Families History";
 			m_familiesHistoryLabel.text = Localization.GetEmptyHouse();
 			m_familiesHistoryLabel.textScale = 0.8f;
-			m_familiesHistoryLabel.width = m_zonedBuildingInfoPanel.component.width/3;
+			m_familiesHistoryLabel.width = m_zonedBuildingInfoPanel.component.width/2;
 			//m_familiesHistoryLabel.wordWrap = true;
-			m_familiesHistoryLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-			m_familiesHistoryLabel.relativePosition += new Vector3 (-m_familiesHistoryLabel.width, 30f, 0f);
+			//m_familiesHistoryLabel.autoSize = true;
 
 			m_activatedDateLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
 			m_activatedDateLabel.name = "Activation Date";
 			m_activatedDateLabel.text = Localization.GetActivationDate();
 			m_activatedDateLabel.textScale = 0.8f;
-			m_activatedDateLabel.width = m_zonedBuildingInfoPanel.component.width/3;
-			m_activatedDateLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-			m_activatedDateLabel.relativePosition += new Vector3 (-m_familiesHistoryLabel.width, 60f, 0f);
+			m_activatedDateLabel.width = m_zonedBuildingInfoPanel.component.width/2;
 
-			m_zonedBuildingInfoPanel.component.eventVisibilityChanged +=(component, param) =>
-			{
-				if(param)
-					m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
-			};
+			m_statsLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_statsLabel.name = "Stats";
+			m_statsLabel.text = Localization.GetAccumulatedIncome();
+			m_statsLabel.textScale = 0.8f;
+			m_statsLabel.width = m_zonedBuildingInfoPanel.component.width/2;
+
+//			m_zonedBuildingInfoPanel.component.eventVisibilityChanged +=(component, param) =>
+//			{
+//				if(param)
+//					OnSelected();
+//					//m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
+//			};
 
 			m_zonedBuildingInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
 			{
 				if(m_zonedBuildingInfoPanel.component.isVisible)
-					m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
+					OnSelected();
+					//m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
 			};
 
 			m_zonedBuildingInfoPanelInitialHeight = m_zonedBuildingInfoPanel.component.height;
@@ -167,15 +176,15 @@ namespace ResilientOwners
 
 		/********** UI update methods ***************/
 
-		IEnumerator OnSelected()
+		void/*IEnumerator*/ OnSelected()
 		{
-			yield return new WaitForEndOfFrame();
+			//yield return new WaitForEndOfFrame();
 			//get selected building ID (after waiting it has been actualized)
 			FieldInfo baseSub = m_zonedBuildingInfoPanel.GetType().GetField("m_InstanceID", BindingFlags.NonPublic | BindingFlags.Instance);
 			InstanceID instanceId = (InstanceID)baseSub.GetValue(m_zonedBuildingInfoPanel);
 			if (instanceId.Type == InstanceType.Building && instanceId.Building != 0) {
 				if(m_currentSelectedBuildingID == instanceId.Building) //no update needed
-					yield break;
+					return;//yield break;
 				m_currentSelectedBuildingID = instanceId.Building;
 			} else
 				m_currentSelectedBuildingID = 0;
@@ -203,6 +212,7 @@ namespace ResilientOwners
 			m_descriptionTextField.isVisible = false;
 			m_familiesHistoryLabel.isVisible = false;
 			m_activatedDateLabel.isVisible = false;
+			m_statsLabel.isVisible = false;
 			ResizePanelHeight(0);
 		}
 
@@ -216,16 +226,49 @@ namespace ResilientOwners
 			m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
 			m_familiesHistoryLabel.isVisible = true;
 
-			m_activatedDateLabel.text = Localization.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("dd/MM/yyyy");
+			m_activatedDateLabel.text = Localization.GetActivationDate() + '\n' + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("dd/MM/yyyy");
 			m_activatedDateLabel.isVisible = true;
+
+			m_statsLabel.isVisible = true;
+
+			ResizePanelHeight(0f);
 		}
 
+		float last_desc_height;
 		public void ResizePanelHeight(float desc_height)
 		{
-			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight + desc_height;
+			if(desc_height == 0f)
+				desc_height = last_desc_height;
+
+			float hist_height = m_familiesHistoryLabel.height + m_activatedDateLabel.height;
+
+			float add_height = Mathf.Max(desc_height, hist_height);
+
+			m_familiesHistoryLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
+			m_activatedDateLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
+			m_statsLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
+			m_activatedDateLabel.relativePosition += new Vector3 (0, -add_height+2*m_activatedDateLabel.height, 0f);
+			m_statsLabel.relativePosition += new Vector3 (0, -add_height+2*m_activatedDateLabel.height+2*m_statsLabel.height, 0f);
+			m_familiesHistoryLabel.relativePosition += new Vector3 (0, -add_height+2*m_activatedDateLabel.height+2*m_statsLabel.height+2*m_familiesHistoryLabel.height, 0f);
+
+			m_descriptionTextField.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
+			m_familiesHistoryLabel.relativePosition += new Vector3 (0, -add_height+desc_height, 0f);
+
+
+			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight + add_height;
+
+			last_desc_height = desc_height;
 		}
 
-	
+		private void Update()
+		{
+			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
+			if(buildIndex != -1)
+			{
+				income.Check(m_info.m_resilients [buildIndex].total_income);
+				m_statsLabel.text = Localization.GetAccumulatedIncome() + income.result+" "+m_info.GetVisitsCount(m_info.m_resilients [buildIndex].buildingID));
+			}
+		}
 
 	}
 }

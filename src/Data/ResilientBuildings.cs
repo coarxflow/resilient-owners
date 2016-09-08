@@ -18,10 +18,6 @@ namespace ResilientOwners
 			public string name;
 			public ItemClass.Layer layer;
 
-			public List<uint> residents;
-			public List<uint> residents_units;
-			public List<string> residents_names;
-
 			public DateTime activatedDate;
 
 			public bool resiliencyActivated;
@@ -30,6 +26,8 @@ namespace ResilientOwners
 			public List<uint> families_id;
 			public List<string> families_names;
 			public string description;
+
+			public long total_income;
 
 			public bool unsuscribed;
 			public int unsuscribeTimer;
@@ -71,6 +69,8 @@ namespace ResilientOwners
 				ri.unsuscribeTimer = 0;
 				ri.resiliencyActivated = resilient;
 				m_resilients[buildIndex] = ri;
+				Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_majorProblemTimer = 0;
+				Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_problems = Notification.RemoveProblems(Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_problems, Notification.Problem.MajorProblem);
 				return;
 			}
 
@@ -83,17 +83,15 @@ namespace ResilientOwners
 			ri.layer = build.Info.m_class.m_layer;
 			ri.chosenLevel = build.Info.m_class.m_level;
 
-			ri.residents = new List<uint>();
-			ri.residents_units = new List<uint>();
-			ri.residents_names = new List<string>();
-
 			ri.families_id = new List<uint>();
 
 			//speed up abandonment
-			Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_electricityProblemTimer = 60;
-			Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_majorProblemTimer = 60;
+//			Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_electricityProblemTimer = 60;
+//			Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_majorProblemTimer = 60;
 
 			m_resilients.Add(ri);
+
+			UpdateResidentFamilies(m_resilients.Count-1);
 		}
 
 		public void UnsuscribeBuilding(ushort buildingID)
@@ -115,50 +113,7 @@ namespace ResilientOwners
 			m_resilients.RemoveAt (index);
 		}
 
-		public void UpdateResidents(int resilient_index)
-		{
-			m_resilients [resilient_index].residents_units.Clear ();
-			m_resilients [resilient_index].residents.Clear ();
-			m_resilients [resilient_index].residents_names.Clear ();
-
-			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_resilients[resilient_index].buildingID];
-			CitizenManager instance = Singleton<CitizenManager>.instance;
-			uint num = build.m_citizenUnits;
-			CODebugBase<LogChannel>.Log(LogChannel.Modding, "citizen unit = "+num+" citizen count = "+build.m_citizenCount);
-			int num2 = 0;
-			while (num != 0u)
-			{
-				uint nextUnit = instance.m_units.m_buffer[(int)((UIntPtr)num)].m_nextUnit;
-//				if (/*(ushort)(instance.m_units.m_buffer[(int)((UIntPtr)num)].m_flags & flag) != 0 && */!instance.m_units.m_buffer[(int)((UIntPtr)num)].Full())
-//				{
-//					break;
-//				}
-				m_resilients[resilient_index].residents_units.Add(num);
-				m_resilients[resilient_index].residents.Add(instance.m_units.m_buffer[num].m_citizen0);
-				if(instance.m_units.m_buffer[num].m_citizen0 != 0)
-					m_resilients[resilient_index].residents_names.Add(instance.GetCitizenName(instance.m_units.m_buffer[num].m_citizen0));
-				m_resilients[resilient_index].residents.Add(instance.m_units.m_buffer[num].m_citizen1);
-				if(instance.m_units.m_buffer[num].m_citizen1 != 0)
-					m_resilients[resilient_index].residents_names.Add(instance.GetCitizenName(instance.m_units.m_buffer[num].m_citizen1));
-				m_resilients[resilient_index].residents.Add(instance.m_units.m_buffer[num].m_citizen2);
-				if(instance.m_units.m_buffer[num].m_citizen2 != 0)
-					m_resilients[resilient_index].residents_names.Add(instance.GetCitizenName(instance.m_units.m_buffer[num].m_citizen2));
-				m_resilients[resilient_index].residents.Add(instance.m_units.m_buffer[num].m_citizen3);
-				if(instance.m_units.m_buffer[num].m_citizen3 != 0)
-					m_resilients[resilient_index].residents_names.Add(instance.GetCitizenName(instance.m_units.m_buffer[num].m_citizen3));
-				m_resilients[resilient_index].residents.Add(instance.m_units.m_buffer[num].m_citizen4);
-				if(instance.m_units.m_buffer[num].m_citizen4 != 0)
-					m_resilients[resilient_index].residents_names.Add(instance.GetCitizenName(instance.m_units.m_buffer[num].m_citizen4));
-
-				num = nextUnit;
-				if (++num2 > 524288)
-				{
-					CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
-					break;
-				}
-			}
-		}
-
+		//residential building history updates
 		public void UpdateResidentFamilies(int resilient_index)
 		{
 			List<uint> current_families_id = new List<uint>();
@@ -234,6 +189,33 @@ namespace ResilientOwners
 			}
 
 			return ret;
+		}
+
+		//commercial building history updates
+		public int UpdateVisitsCount(ushort buildingID)
+		{
+			CitizenManager instance = Singleton<CitizenManager>.instance;
+			Citizen.BehaviourData behaviour = new Citizen.BehaviourData();
+			int aliveCount = 0;
+			int totalCount = 0;
+
+			uint num = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_citizenUnits;
+			int num2 = 0;
+			while (num != 0u)
+			{
+				if ((ushort)(instance.m_units.m_buffer[(int)((UIntPtr)num)].m_flags & CitizenUnit.Flags.Visit) != 0)
+				{
+					instance.m_units.m_buffer[(int)((UIntPtr)num)].GetCitizenVisitBehaviour(ref behaviour, ref aliveCount, ref totalCount);
+				}
+				num = instance.m_units.m_buffer[(int)((UIntPtr)num)].m_nextUnit;
+				if (++num2 > 524288)
+				{
+					CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+					break;
+				}
+			}
+
+			return aliveCount;
 		}
 
 	}
