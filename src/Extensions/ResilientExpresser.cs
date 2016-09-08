@@ -86,7 +86,33 @@ namespace ResilientOwners
 					continue;
 				}
 
-				s_info.UpdateResidentFamilies(i);
+
+				//update infos
+				BuildingInfo buildinfo = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].Info;
+
+				if(buildinfo.m_class.m_service == ItemClass.Service.Residential)
+				{
+					s_info.UpdateResidentFamilies(i);
+				}
+				else
+				{
+					s_info.UpdateWorkers(i);
+
+					if(buildinfo.m_class.m_service == ItemClass.Service.Commercial)
+						s_info.UpdateVisitsCount(i);
+					else if(buildinfo.m_class.m_service == ItemClass.Service.Industrial)
+					{
+						if(buildinfo.m_buildingAI.GetType().Equals(typeof(IndustrialExtractorAI)))
+							{
+							s_info.UpdatePrimaryResourceExport(i);
+							}
+							else if(buildinfo.m_buildingAI.GetType().Equals(typeof(IndustrialBuildingAI)))
+							{
+							s_info.UpdateGoodsExport(i);
+							}
+					}
+				}
+
 
 				if(build.resiliencyActivated)
 				{

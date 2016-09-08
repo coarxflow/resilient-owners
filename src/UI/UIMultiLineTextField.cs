@@ -853,7 +853,6 @@ namespace ResilientOwners
 		
 		protected override void OnLostFocus(UIFocusEventParameter p)
 		{
-			CODebug.Log(LogChannel.Modding, "OnLostFocus");
 			//base.OnLostFocus(p);
 //			if (!this.m_FocusForced)
 //			{
@@ -873,12 +872,11 @@ namespace ResilientOwners
 //			this.m_TimeSinceFocus = 0f;
 		}
 
+		//!!!! is not called for whatever reason, submit on focus lost implemented in MakeCursorBlink instead
 		protected void OnLeaveFocus(UIFocusEventParameter p)
 		{
 			base.OnLostFocus(p);
 			base.OnLeaveFocus(p);
-
-			CODebug.Log(LogChannel.Modding, "OnLeaveFocus");
 
 			if (!this.m_FocusForced)
 			{
@@ -983,8 +981,6 @@ namespace ResilientOwners
 			float conv = base.PixelsToUnits();
 			float meanLineHeight = stringAreaSize.y / linesCount;
 
-			CODebug.Log(LogChannel.Modding, "string area = "+stringAreaSize+" field area = "+fieldSize);
-
 			int target_char = text.Length; //last char if not any before succeeded
 			float left_carriage = this.m_LeftOffset / conv+ (float)this.padding.left;
 			int target_line = Mathf.Clamp (Mathf.FloorToInt (hitPosition.y / meanLineHeight), 0, linesCount - 1);;
@@ -1041,6 +1037,15 @@ namespace ResilientOwners
 					this.m_CursorShown = !this.m_CursorShown;
 					this.Invalidate();
 					this.m_retainFocus = UIView.ContainsFocus(this);
+				}
+				//focus was lost according to UIView, save
+				if (this.submitOnFocusLost)
+				{
+					this.OnSubmit();
+				}
+				else
+				{
+					this.OnCancel();
 				}
 				this.m_CursorShown = false;
 				this.Invalidate();
@@ -2045,6 +2050,7 @@ namespace ResilientOwners
 //			this.m_IsDisposing = true;
 			this.horizontalAlignment = UIHorizontalAlignment.Left;
 			this.readOnly = false;
+			this.submitOnFocusLost = true;
 
 			m_dummyTextField = this.AddUIComponent<UITextField> ();
 			m_dummyTextField.text = "dummy";
@@ -2090,12 +2096,25 @@ namespace ResilientOwners
 			this.Invalidate ();
 		}
 
+		public float getComposedHeight()
+		{
+			float total_height = 0f;
+			if(m_showTitle)
+			{
+				total_height += m_dummyTextField.height;
+			}
+			
+			total_height += this.height;
+
+			return total_height;
+		}
+
 		bool m_autoAdjustHeight = false;
 		float m_lastHeight = 0f;
 		void AutoHeight()
 		{
-			if (!m_autoAdjustHeight)
-				return;
+//			if (!m_autoAdjustHeight)
+//				return;
 
 			//relativePosition = m_InitialRelativePosition;
 			float total_height = 0f;
@@ -2110,12 +2129,13 @@ namespace ResilientOwners
 			
 			total_height += stringAreaSize.y;
 
+			//this.height = total_height;
 			//this.height = stringAreaSize.y;
 
 			if (m_lastHeight != total_height) {
 				m_lastHeight = total_height;
 				this.Invalidate();
-				eventHeightChange(this, this.height);
+				eventHeightChange(this, total_height);
 			}
 		}
 
@@ -2140,12 +2160,12 @@ namespace ResilientOwners
 			{
 				text = defaultText;
 				selectOnFocus = true;
-				textColor = Color.gray;
+				textColor = this.disabledTextColor;
 			}
 			else
 			{
 				selectOnFocus = false;
-				textColor = Color.white;
+				textColor = this.textColor;
 			}
 		}
 	}

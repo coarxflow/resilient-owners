@@ -91,7 +91,7 @@ namespace ResilientOwners
 					if(buildIndex != -1)
 					{
 						ResilientBuildings.ResilientInfo ri = s_info.m_resilients[buildIndex];
-						ri.total_income += amount;
+						ri.totalIncome += amount;
 						s_info.m_resilients[buildIndex] = ri;
 					}
 				}

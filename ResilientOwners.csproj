@@ -59,9 +59,10 @@
     <Compile Include="src\Data\ResilientBuildings.cs" />
     <Compile Include="src\UI\ResilientUI.cs" />
     <Compile Include="src\Extensions\BookKeeper.cs" />
-    <Compile Include="src\UI\StateButton.cs" />
     <Compile Include="src\Data\Localization.cs" />
     <Compile Include="src\Extensions\IncomeTracker.cs" />
+    <Compile Include="src\UI\UIGoodsWrapper.cs" />
+    <Compile Include="src\UI\StatesButton.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />

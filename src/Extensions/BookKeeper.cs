@@ -40,6 +40,10 @@ namespace ResilientOwners
 						BinaryFormatter bFormatter = new BinaryFormatter();
 						MemoryStream mStream       = new MemoryStream(data);
 						s_data = (List<ResilientBuildings.ResilientInfo>)bFormatter.Deserialize(mStream);
+						for(int i = 0; i < s_data.Count; i++)
+						{
+							s_data[i].idsBuffer.Clear();
+						}
 						CODebug.Log (LogChannel.Modding, Mod.modName+" - succesful loading data");
 						
 					} else {

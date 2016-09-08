@@ -23,11 +23,19 @@ namespace ResilientOwners
 			public bool resiliencyActivated;
 			public ItemClass.Level chosenLevel;
 
-			public List<uint> families_id;
-			public List<string> families_names;
 			public string description;
 
-			public long total_income;
+			public List<uint> idsBuffer; //track families or workers ids
+
+			public long totalIncome;
+
+			public int totalVisits;
+			public int currentVisits;
+
+			public int goodsBuffer1;
+			public int goodsBuffer2;
+			public int goodsBuffer3;
+			public int goodsBuffer4;
 
 			public bool unsuscribed;
 			public int unsuscribeTimer;
@@ -83,7 +91,14 @@ namespace ResilientOwners
 			ri.layer = build.Info.m_class.m_layer;
 			ri.chosenLevel = build.Info.m_class.m_level;
 
-			ri.families_id = new List<uint>();
+			ri.idsBuffer = new List<uint>();
+
+			ri.goodsBuffer1 = 0;
+			ri.goodsBuffer2 = 0;
+			ri.goodsBuffer3 = 0;
+			ri.goodsBuffer4 = 0;
+
+
 
 			//speed up abandonment
 //			Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_electricityProblemTimer = 60;
@@ -142,19 +157,10 @@ namespace ResilientOwners
 			//update history family list with any new names
 			for(int i = 0; i < current_families_id.Count; i++)
 			{
-				if(!m_resilients[resilient_index].families_id.Contains(current_families_id[i]))
+				if(!m_resilients[resilient_index].idsBuffer.Contains(current_families_id[i]))
 				{
 					CODebugBase<LogChannel>.Log(LogChannel.Modding, "new unit uint "+num+" family byte "+instance.m_citizens.m_buffer[instance.m_units.m_buffer[num].m_citizen0].m_family);
-					m_resilients[resilient_index].families_id.Add(current_families_id[i]);
-//					int family = instance.m_citizens.m_buffer[instance.m_units.m_buffer[num].m_citizen0].m_family;
-//					Randomizer randomizer2 = new Randomizer(family);
-//					string text2 = "NAME_FEMALE_LAST";
-////					if (Citizen.GetGender(citizenID) == Citizen.Gender.Male)
-////					{
-////						text = "NAME_MALE_FIRST";
-////						text2 = "NAME_MALE_LAST";
-////					}
-//					text2 = Locale.Get(text2, randomizer2.Int32(Locale.Count(text2)));
+					m_resilients[resilient_index].idsBuffer.Add(current_families_id[i]);
 				}
 			}
 		}
@@ -164,12 +170,12 @@ namespace ResilientOwners
 			ResilientInfo ri = m_resilients[buildIndex];
 
 			string ret;
-			if(ri.families_id.Count > 0)
+			if(ri.idsBuffer.Count > 0)
 			{
 				ret = Localization.GetFamiliesHistory();
-				for(int i = 0; i < ri.families_id.Count; i++)
+				for(int i = 0; i < ri.idsBuffer.Count; i++)
 				{
-					int family = Singleton<CitizenManager>.instance.m_citizens.m_buffer[Singleton<CitizenManager>.instance.m_units.m_buffer[ri.families_id[i]].m_citizen0].m_family;
+					int family = Singleton<CitizenManager>.instance.m_citizens.m_buffer[Singleton<CitizenManager>.instance.m_units.m_buffer[ri.idsBuffer[i]].m_citizen0].m_family;
 					Randomizer randomizer2 = new Randomizer(family);
 					string text2 = "NAME_FEMALE_LAST";
 	//					if (Citizen.GetGender(citizenID) == Citizen.Gender.Male)
@@ -179,7 +185,7 @@ namespace ResilientOwners
 	//					}
 					text2 = Locale.Get(text2, randomizer2.Int32(Locale.Count(text2)));
 					ret += text2.Substring(4);//remove placeholder in front
-					if(i < ri.families_id.Count-1)
+					if(i < ri.idsBuffer.Count-1)
 						ret += Localization.GetFamiliesSeparator();
 				}
 			}
@@ -191,15 +197,96 @@ namespace ResilientOwners
 			return ret;
 		}
 
-		//commercial building history updates
-		public int UpdateVisitsCount(ushort buildingID)
+		//workers building history update
+		public void UpdateWorkers(int resilient_index)
 		{
+			List<uint> current_workers_ids = new List<uint>();
+
+			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_resilients[resilient_index].buildingID];
+			CitizenManager instance = Singleton<CitizenManager>.instance;
+			uint num = build.m_citizenUnits;
+			int num2 = 0;
+			while (num != 0u)
+			{
+				if ((ushort)(instance.m_units.m_buffer[(int)((UIntPtr)num)].m_flags & CitizenUnit.Flags.Work) != 0)
+				{
+					CitizenUnit work_unit = instance.m_units.m_buffer[(int)((UIntPtr)num)];
+					if (work_unit.m_citizen0 != 0u)
+					{
+						current_workers_ids.Add(work_unit.m_citizen0);
+					}
+					if (work_unit.m_citizen1 != 0u)
+					{
+						current_workers_ids.Add(work_unit.m_citizen1);
+					}
+					if (work_unit.m_citizen2 != 0u)
+					{
+						current_workers_ids.Add(work_unit.m_citizen2);
+					}
+					if (work_unit.m_citizen3 != 0u)
+					{
+						current_workers_ids.Add(work_unit.m_citizen3);
+					}
+					if (work_unit.m_citizen4 != 0u)
+					{
+						current_workers_ids.Add(work_unit.m_citizen4);
+					}
+					current_workers_ids.Add(num);
+				}
+
+				num = instance.m_units.m_buffer[(int)((UIntPtr)num)].m_nextUnit;
+
+				if (++num2 > 524288)
+				{
+					CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+					break;
+				}
+			}
+
+			//update history family list with any new names
+			for(int i = 0; i < current_workers_ids.Count; i++)
+			{
+				if(!m_resilients[resilient_index].idsBuffer.Contains(current_workers_ids[i]))
+				{
+					m_resilients[resilient_index].idsBuffer.Add(current_workers_ids[i]);
+				}
+			}
+		}
+
+		public string GetWorkersHistoryList(int buildIndex)
+		{
+			ResilientInfo ri = m_resilients[buildIndex];
+
+			string ret;
+			if(ri.idsBuffer.Count > 0)
+			{
+				ret = Localization.GetWorkersHistory();
+				for(int i = 0; i < ri.idsBuffer.Count; i++)
+				{
+					ret += Singleton<CitizenManager>.instance.GetCitizenName(ri.idsBuffer[i]);
+					if(i < ri.idsBuffer.Count-1)
+						ret += Localization.GetFamiliesSeparator();
+				}
+			}
+			else
+			{
+				ret = Localization.GetEmptyFacility();
+			}
+
+			return ret;
+		}
+
+		//commercial building history updates
+		public void UpdateVisitsCount(int buildIndex)
+		{
+			ResilientInfo ri = m_resilients[buildIndex];
+
 			CitizenManager instance = Singleton<CitizenManager>.instance;
 			Citizen.BehaviourData behaviour = new Citizen.BehaviourData();
 			int aliveCount = 0;
 			int totalCount = 0;
 
-			uint num = Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_citizenUnits;
+			uint num = Singleton<BuildingManager>.instance.m_buildings.m_buffer[ri.buildingID].m_citizenUnits;
 			int num2 = 0;
 			while (num != 0u)
 			{
@@ -215,7 +302,63 @@ namespace ResilientOwners
 				}
 			}
 
-			return aliveCount;
+
+			if(totalCount < ri.currentVisits) //assume some visitors have left
+			{
+				ri.totalVisits += ri.currentVisits - totalCount;
+			}
+
+			ri.currentVisits = totalCount;
+
+			m_resilients[buildIndex] = ri;
+		}
+
+		//industrial extractor export history
+		public void UpdatePrimaryResourceExport(int buildIndex)
+		{
+			ResilientInfo ri = m_resilients[buildIndex];
+
+			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[ri.buildingID];
+
+			int cbn1 = (int) build.m_customBuffer1;
+
+			if(cbn1 < ri.goodsBuffer1) //material has been picked up
+			{
+				ri.goodsBuffer2 += ri.goodsBuffer1 - cbn1;
+			}
+			else //material has been extracted
+			{
+				ri.goodsBuffer3 -= ri.goodsBuffer1 - cbn1;
+			}
+
+			ri.goodsBuffer1 = cbn1;
+
+			m_resilients[buildIndex] = ri;
+		}
+
+		//industrial goods export history
+		public void UpdateGoodsExport(int buildIndex)
+		{
+			ResilientInfo ri = m_resilients[buildIndex];
+
+			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[ri.buildingID];
+
+			int cbn1 = (int) build.m_customBuffer1;
+			int cbn2 = (int) build.m_customBuffer2;
+
+			if(cbn1 > ri.goodsBuffer1) //material has been brought
+			{
+				ri.goodsBuffer2 -= ri.goodsBuffer1 - cbn1;
+			}
+			ri.goodsBuffer1 = cbn1;
+
+			if(cbn2 < ri.goodsBuffer3) //goods have been picked up
+			{
+				ri.goodsBuffer4 += ri.goodsBuffer3 - cbn2;
+			}
+			ri.goodsBuffer3 = cbn2;
+
+			m_resilients[buildIndex] = ri;
 		}
 
 	}

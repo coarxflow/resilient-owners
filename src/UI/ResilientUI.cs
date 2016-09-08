@@ -25,19 +25,23 @@ namespace ResilientOwners
 		ZonedBuildingWorldInfoPanel m_zonedBuildingInfoPanel;
 		float m_zonedBuildingInfoPanelInitialHeight = 0f;
 
+		UILabel m_historyTitleLabel;
 		UIMultilineTextField m_descriptionTextField;
-		StateButton m_resilientStateButton;
+		StatesButton m_resilientStateButton;
 		UILabel m_familiesHistoryLabel;
 		UILabel m_activatedDateLabel;
 		UILabel m_statsLabel;
+		UILabel m_statsLabel2;
 
 		UICurrencyWrapper income =  new UICurrencyWrapper(0L);
+		UIGoodsWrapper industryGoods =  new UIGoodsWrapper(0);
+		UIGoodsWrapper industryGoods2 =  new UIGoodsWrapper(0);
 
 		ushort m_currentSelectedBuildingID;
 
 		public static ResilientUI Install(GameObject go, ResilientBuildings info)
 		{
-			ResilientUI rui =go.AddComponent<ResilientUI>();
+			ResilientUI rui = go.AddComponent<ResilientUI>();
 			//ResilientUI rui = new ResilientUI();
 			rui.m_info = info;
 
@@ -57,50 +61,43 @@ namespace ResilientOwners
 
 		void AddComponents()
 		{
+			m_zonedBuildingInfoPanelInitialHeight = m_zonedBuildingInfoPanel.component.height;
+
+			m_historyTitleLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_historyTitleLabel.name = "History Title";
+			m_historyTitleLabel.text = Localization.GetHistoryTitle();
 
 			m_descriptionTextField = m_zonedBuildingInfoPanel.component.AddUIComponent<UIMultilineTextField> ();
 			m_descriptionTextField.name = "Building Description";
 			m_descriptionTextField.text = "Enter description";
 			m_descriptionTextField.textScale = 0.8f;
 			m_descriptionTextField.width = m_zonedBuildingInfoPanel.component.width/2;
-			//m_descriptionTextField.height = 70;
-//			textfield.normalBgSprite = "ButtonMenu";
-//			textfield.disabledBgSprite = "ButtonMenuDisabled";
-//			textfield.hoveredBgSprite = "ButtonMenuHovered";
-//			textfield.focusedBgSprite = "ButtonMenu";
+			m_descriptionTextField.height = 100f;
 			m_descriptionTextField.disabledTextColor = new Color32(7, 7, 7, 255);
 			m_descriptionTextField.eventTextSubmitted += (component, param) =>
 			{
 				SaveDescription(param);
 			};
-			m_descriptionTextField.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_descriptionTextField.relativePosition += new Vector3 (10f, 30f, 0f);
-			m_descriptionTextField.FixPositionAndActivateAutoHeight();
-			//m_descriptionTextField.relativePosition += new Vector3 (10f, 40f, 0f);
-
 			m_descriptionTextField.title = "Description";
 			m_descriptionTextField.showTitle = true;
 			m_descriptionTextField.defaultText = Localization.GetDescriptionEmpty();
-
 			m_descriptionTextField.eventHeightChange += (component, height) => {
 				ResizePanelHeight(height);
 			};
 
 			int spriteWidth = 32;
 			int spriteHeight = 32;
-			string[] spriteNames = {
-				"ResilientDisabled", 
-				"ResilientEnabled",
-				"Resilient+"
+			string[] tooltips = {
+				Mod.modName+": disabled", 
+				Mod.modName+": history is enabled",
+				Mod.modName+": history and resiliency enabled"
 			};
-			m_resilientStateButton = new StateButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, spriteNames, "icons.book.png");
+			m_resilientStateButton = new StatesButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, 3, "icons.book.png", "ResilientOwners", tooltips);
 
 			m_resilientStateButton.msb.eventActiveStateIndexChanged += (component, value) => {
 
 				if(!m_allowEvents)
 					return;
-
-				CODebug.Log(LogChannel.Modding, "multistate button in state "+value);
 
 				switch(value)
 				{
@@ -125,9 +122,8 @@ namespace ResilientOwners
 			m_familiesHistoryLabel.name = "Families History";
 			m_familiesHistoryLabel.text = Localization.GetEmptyHouse();
 			m_familiesHistoryLabel.textScale = 0.8f;
-			m_familiesHistoryLabel.width = m_zonedBuildingInfoPanel.component.width/2;
-			//m_familiesHistoryLabel.wordWrap = true;
-			//m_familiesHistoryLabel.autoSize = true;
+			m_familiesHistoryLabel.width = 2*m_zonedBuildingInfoPanel.component.width/3f;
+			m_familiesHistoryLabel.wordWrap = true;
 
 			m_activatedDateLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
 			m_activatedDateLabel.name = "Activation Date";
@@ -141,6 +137,12 @@ namespace ResilientOwners
 			m_statsLabel.textScale = 0.8f;
 			m_statsLabel.width = m_zonedBuildingInfoPanel.component.width/2;
 
+			m_statsLabel2 = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_statsLabel2.name = "Stats 2";
+			m_statsLabel2.text = "";
+			m_statsLabel2.textScale = 0.8f;
+			m_statsLabel2.width = m_zonedBuildingInfoPanel.component.width/2;
+
 //			m_zonedBuildingInfoPanel.component.eventVisibilityChanged +=(component, param) =>
 //			{
 //				if(param)
@@ -152,10 +154,8 @@ namespace ResilientOwners
 			{
 				if(m_zonedBuildingInfoPanel.component.isVisible)
 					OnSelected();
-					//m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
 			};
 
-			m_zonedBuildingInfoPanelInitialHeight = m_zonedBuildingInfoPanel.component.height;
 
 		}
 
@@ -176,18 +176,19 @@ namespace ResilientOwners
 
 		/********** UI update methods ***************/
 
-		void/*IEnumerator*/ OnSelected()
+		void OnSelected()
 		{
-			//yield return new WaitForEndOfFrame();
 			//get selected building ID (after waiting it has been actualized)
 			FieldInfo baseSub = m_zonedBuildingInfoPanel.GetType().GetField("m_InstanceID", BindingFlags.NonPublic | BindingFlags.Instance);
 			InstanceID instanceId = (InstanceID)baseSub.GetValue(m_zonedBuildingInfoPanel);
 			if (instanceId.Type == InstanceType.Building && instanceId.Building != 0) {
 				if(m_currentSelectedBuildingID == instanceId.Building) //no update needed
-					return;//yield break;
+					return;
 				m_currentSelectedBuildingID = instanceId.Building;
 			} else
+			{
 				m_currentSelectedBuildingID = 0;
+			}
 
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 			m_allowEvents = false;
@@ -213,7 +214,8 @@ namespace ResilientOwners
 			m_familiesHistoryLabel.isVisible = false;
 			m_activatedDateLabel.isVisible = false;
 			m_statsLabel.isVisible = false;
-			ResizePanelHeight(0);
+			m_statsLabel2.isVisible = false;
+			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight;
 		}
 
 		public void ShowHistory()
@@ -223,13 +225,17 @@ namespace ResilientOwners
 			m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
 			m_descriptionTextField.isVisible = true;
 
-			m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
+			if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
+				m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
+			else
+				m_familiesHistoryLabel.text = m_info.GetWorkersHistoryList(buildIndex);
 			m_familiesHistoryLabel.isVisible = true;
 
-			m_activatedDateLabel.text = Localization.GetActivationDate() + '\n' + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("dd/MM/yyyy");
+			m_activatedDateLabel.text = Localization.GetActivationDate() + ' ' + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("dd/MM/yyyy");
 			m_activatedDateLabel.isVisible = true;
 
 			m_statsLabel.isVisible = true;
+			m_statsLabel2.isVisible = true;
 
 			ResizePanelHeight(0f);
 		}
@@ -240,19 +246,27 @@ namespace ResilientOwners
 			if(desc_height == 0f)
 				desc_height = last_desc_height;
 
-			float hist_height = m_familiesHistoryLabel.height + m_activatedDateLabel.height;
+			float padding = 20f;
+
+			desc_height = m_descriptionTextField.getComposedHeight();
+			float hist_height = m_familiesHistoryLabel.height + m_activatedDateLabel.height + m_statsLabel.height + m_statsLabel2.height + 3*padding;
 
 			float add_height = Mathf.Max(desc_height, hist_height);
 
-			m_familiesHistoryLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-			m_activatedDateLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-			m_statsLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomRight);
-			m_activatedDateLabel.relativePosition += new Vector3 (0, -add_height+2*m_activatedDateLabel.height, 0f);
-			m_statsLabel.relativePosition += new Vector3 (0, -add_height+2*m_activatedDateLabel.height+2*m_statsLabel.height, 0f);
-			m_familiesHistoryLabel.relativePosition += new Vector3 (0, -add_height+2*m_activatedDateLabel.height+2*m_statsLabel.height+2*m_familiesHistoryLabel.height, 0f);
+			m_historyTitleLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
+			m_historyTitleLabel.relativePosition += new Vector3 (0, -add_height+m_historyTitleLabel.height, 0f);
+
+			m_familiesHistoryLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
+			m_activatedDateLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
+			m_statsLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
+			m_statsLabel2.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
+			m_activatedDateLabel.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height, 0f);
+			m_statsLabel.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height + padding, 0f);
+			m_statsLabel2.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height+m_statsLabel.height + 2*padding, 0f);
+			m_familiesHistoryLabel.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height+m_statsLabel2.height+m_familiesHistoryLabel.height + 3*padding, 0f);
 
 			m_descriptionTextField.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_familiesHistoryLabel.relativePosition += new Vector3 (0, -add_height+desc_height, 0f);
+			m_descriptionTextField.relativePosition += new Vector3 (0, -add_height+m_historyTitleLabel.height+desc_height, 0f);
 
 
 			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight + add_height;
@@ -262,11 +276,43 @@ namespace ResilientOwners
 
 		private void Update()
 		{
+			if(m_currentSelectedBuildingID <= 0)
+				return;
+
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 			if(buildIndex != -1)
 			{
-				income.Check(m_info.m_resilients [buildIndex].total_income);
-				m_statsLabel.text = Localization.GetAccumulatedIncome() + income.result+" "+m_info.GetVisitsCount(m_info.m_resilients [buildIndex].buildingID));
+				income.Check(m_info.m_resilients [buildIndex].totalIncome);
+				m_statsLabel.text = Localization.GetAccumulatedIncome() + income.result;
+
+				BuildingInfo buildinfo = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info;
+				switch(buildinfo.m_class.m_service)
+				{
+					case ItemClass.Service.Commercial:
+						m_statsLabel2.text = "Clients served : " + m_info.m_resilients [buildIndex].totalVisits + " - Inside now : " + m_info.m_resilients [buildIndex].currentVisits;
+						break;
+					case ItemClass.Service.Industrial:
+					CODebug.Log(LogChannel.Modding, "examine AI "+buildinfo.m_buildingAI+" for "+Singleton<BuildingManager>.instance.GetBuildingName(m_currentSelectedBuildingID, default(InstanceID)));
+						bool extractor = buildinfo.m_buildingAI.GetType().Equals(typeof(IndustrialExtractorAI));
+
+						if(extractor)
+						{
+							industryGoods.Check(m_info.m_resilients [buildIndex].goodsBuffer2, buildinfo.m_class.m_subService, true);
+							industryGoods2.Check(m_info.m_resilients [buildIndex].goodsBuffer3, buildinfo.m_class.m_subService, true);
+							m_statsLabel2.text = "Exported : " + industryGoods.result +", Stock : " + industryGoods2.result;
+						}
+						else
+						{
+							industryGoods.Check(m_info.m_resilients [buildIndex].goodsBuffer2, buildinfo.m_class.m_subService, false);
+							industryGoods2.Check(m_info.m_resilients [buildIndex].goodsBuffer4, buildinfo.m_class.m_subService, false);
+							m_statsLabel2.text = "Imported : " + industryGoods.result +", Exported " + industryGoods2.result;
+						}
+						break;
+					default:
+						m_statsLabel2.isVisible = false;
+						break;
+				}
+	
 			}
 		}
 
