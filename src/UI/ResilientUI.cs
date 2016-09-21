@@ -23,7 +23,19 @@ namespace ResilientOwners
 		ResilientBuildings m_info;
 
 		ZonedBuildingWorldInfoPanel m_zonedBuildingInfoPanel;
-		float m_zonedBuildingInfoPanelInitialHeight = 0f;
+		UIComponent m_bookInfoPanel;
+		UIPanel m_extendedBuildingInfo;
+
+		float m_bookInfoPanelInitialHeight = 0f;
+		float m_bookInfoPanelLeftMargin = 20f;
+		float m_bookInfoPanelLeftMarginPage2;
+		float m_bookInfoPanelRightPadding = 20f;
+		float m_bookInfoPanelPageWidth;
+		float m_bookInfoPanelVerticalPadding = 20f;
+
+		//Color32 m_bookTextColor = new Color32(148,175,199,255);
+		//Color32 m_bookTextColor = new Color32(199,131,50,255);
+		Color32 m_bookTextColor = Color.white;
 
 		UILabel m_historyTitleLabel;
 		UIMultilineTextField m_descriptionTextField;
@@ -39,13 +51,19 @@ namespace ResilientOwners
 
 		ushort m_currentSelectedBuildingID;
 
-		public static ResilientUI Install(GameObject go, ResilientBuildings info)
+		public static ResilientUI Install(GameObject resilientGO, ResilientBuildings info, UIPanel extendedBuildingInfo)
 		{
-			ResilientUI rui = go.AddComponent<ResilientUI>();
+			ResilientUI rui = resilientGO.AddComponent<ResilientUI>();
 			//ResilientUI rui = new ResilientUI();
 			rui.m_info = info;
 
 			rui.m_zonedBuildingInfoPanel = GameObject.Find("(Library) ZonedBuildingWorldInfoPanel").GetComponent<ZonedBuildingWorldInfoPanel>();
+
+			if(extendedBuildingInfo != null)
+			{
+				rui.m_extendedBuildingInfo = extendedBuildingInfo;
+				//rui.referenceExtendedBuildingsInfoModUIelements();
+			}
 
 			rui.AddComponents();
 
@@ -61,25 +79,37 @@ namespace ResilientOwners
 
 		void AddComponents()
 		{
-			m_zonedBuildingInfoPanelInitialHeight = m_zonedBuildingInfoPanel.component.height;
+			BookPanel bp = this.gameObject.AddComponent<BookPanel>();
+			bp.transform.parent = m_zonedBuildingInfoPanel.component.transform;
+			bp.size = new Vector3(m_zonedBuildingInfoPanel.component.size.x, m_zonedBuildingInfoPanel.component.size.y);
+			bp.position = new Vector3(-bp.size.x-m_bookInfoPanelLeftMargin, +bp.size.y);
+            //bp.position = new Vector3(-512, -512);
 
-			m_historyTitleLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_bookInfoPanelInitialHeight = bp.height;
+			m_bookInfoPanelPageWidth = bp.size.x/2 - m_bookInfoPanelLeftMargin - m_bookInfoPanelRightPadding;
+			m_bookInfoPanelLeftMarginPage2 = bp.size.x/2 + m_bookInfoPanelLeftMargin;
+
+			m_bookInfoPanel = bp;
+
+			m_historyTitleLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_historyTitleLabel.name = "History Title";
 			m_historyTitleLabel.text = Localization.GetHistoryTitle();
+			m_historyTitleLabel.textColor = m_bookTextColor;
 
-			m_descriptionTextField = m_zonedBuildingInfoPanel.component.AddUIComponent<UIMultilineTextField> ();
+			m_descriptionTextField = m_bookInfoPanel.AddUIComponent<UIMultilineTextField> ();
 			m_descriptionTextField.name = "Building Description";
 			m_descriptionTextField.text = "Enter description";
 			m_descriptionTextField.textScale = 0.8f;
-			m_descriptionTextField.width = m_zonedBuildingInfoPanel.component.width/2;
+			m_descriptionTextField.width = m_bookInfoPanelPageWidth;
 			m_descriptionTextField.height = 100f;
 			m_descriptionTextField.disabledTextColor = new Color32(7, 7, 7, 255);
+			m_descriptionTextField.textColor = m_bookTextColor;
 			m_descriptionTextField.eventTextSubmitted += (component, param) =>
 			{
 				SaveDescription(param);
 			};
-			m_descriptionTextField.title = "Description";
-			m_descriptionTextField.showTitle = true;
+//			m_descriptionTextField.title = "Description";
+//			m_descriptionTextField.showTitle = true;
 			m_descriptionTextField.defaultText = Localization.GetDescriptionEmpty();
 			m_descriptionTextField.eventHeightChange += (component, height) => {
 				ResizePanelHeight(height);
@@ -116,34 +146,40 @@ namespace ResilientOwners
 				}
 			};
 			m_resilientStateButton.msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
-			m_resilientStateButton.msb.relativePosition += new Vector3 (-50f, 50f, 0f);
+			m_resilientStateButton.msb.relativePosition += new Vector3 (-50f, 90f, 0f);
 
-			m_familiesHistoryLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_familiesHistoryLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_familiesHistoryLabel.name = "Families History";
 			m_familiesHistoryLabel.text = Localization.GetEmptyHouse();
 			m_familiesHistoryLabel.textScale = 0.8f;
-			m_familiesHistoryLabel.width = 2*m_zonedBuildingInfoPanel.component.width/3f;
+			m_familiesHistoryLabel.textColor = m_bookTextColor;
+			m_familiesHistoryLabel.width = m_bookInfoPanelPageWidth;
 			m_familiesHistoryLabel.wordWrap = true;
+			m_familiesHistoryLabel.autoSize = false;
+			m_familiesHistoryLabel.autoHeight = true;
 
-			m_activatedDateLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_activatedDateLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_activatedDateLabel.name = "Activation Date";
 			m_activatedDateLabel.text = Localization.GetActivationDate();
 			m_activatedDateLabel.textScale = 0.8f;
-			m_activatedDateLabel.width = m_zonedBuildingInfoPanel.component.width/2;
+			m_activatedDateLabel.textColor = m_bookTextColor;
+			m_activatedDateLabel.width = m_bookInfoPanelPageWidth;
 
-			m_statsLabel = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_statsLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_statsLabel.name = "Stats";
 			m_statsLabel.text = Localization.GetAccumulatedIncome();
 			m_statsLabel.textScale = 0.8f;
-			m_statsLabel.width = m_zonedBuildingInfoPanel.component.width/2;
+			m_statsLabel.textColor = m_bookTextColor;
+			m_statsLabel.width = m_bookInfoPanelPageWidth;
 
-			m_statsLabel2 = m_zonedBuildingInfoPanel.component.AddUIComponent<UILabel> ();
+			m_statsLabel2 = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_statsLabel2.name = "Stats 2";
 			m_statsLabel2.text = "";
 			m_statsLabel2.textScale = 0.8f;
-			m_statsLabel2.width = m_zonedBuildingInfoPanel.component.width/2;
+			m_statsLabel2.textColor = m_bookTextColor;
+			m_statsLabel2.width = m_bookInfoPanelPageWidth;
 
-//			m_zonedBuildingInfoPanel.component.eventVisibilityChanged +=(component, param) =>
+//			m_zonedBuildingInfoPanelComponent.eventVisibilityChanged +=(component, param) =>
 //			{
 //				if(param)
 //					OnSelected();
@@ -205,7 +241,7 @@ namespace ResilientOwners
 
 			m_allowEvents = true;
 
-			m_zonedBuildingInfoPanel.component.Invalidate();
+			m_bookInfoPanel.Invalidate();
 		}
 
 		public void HideHistory()
@@ -215,14 +251,30 @@ namespace ResilientOwners
 			m_activatedDateLabel.isVisible = false;
 			m_statsLabel.isVisible = false;
 			m_statsLabel2.isVisible = false;
-			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight;
+			m_bookInfoPanel.isVisible = false;
+			if(m_extendedBuildingInfo != null)
+			{
+				showDescriptionExtendedBuildingsInfo();
+			}
+			//m_zonedBuildingInfoPanelComponent.height = m_zonedBuildingInfoPanelInitialHeight;
 		}
 
 		public void ShowHistory()
 		{
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 
+
 			m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
+			if(m_extendedBuildingInfo != null)
+			{
+				if(m_extendedBuildingInfoDescriptionButton == null)
+					referenceExtendedBuildingsInfoModUIelements();
+				if(m_info.m_resilients [buildIndex].description.Length == 0)
+				{
+					m_descriptionTextField.text = takeDescriptionFromExtendedBuildingsInfo();
+				}
+				hideDescriptionExtendedBuildingsInfo();
+			}
 			m_descriptionTextField.isVisible = true;
 
 			if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
@@ -237,6 +289,8 @@ namespace ResilientOwners
 			m_statsLabel.isVisible = true;
 			m_statsLabel2.isVisible = true;
 
+			m_bookInfoPanel.isVisible = true;
+
 			ResizePanelHeight(0f);
 		}
 
@@ -246,32 +300,35 @@ namespace ResilientOwners
 			if(desc_height == 0f)
 				desc_height = last_desc_height;
 
-			float padding = 20f;
-
 			desc_height = m_descriptionTextField.getComposedHeight();
-			float hist_height = m_familiesHistoryLabel.height + m_activatedDateLabel.height + m_statsLabel.height + m_statsLabel2.height + 3*padding;
+			float hist_height = m_familiesHistoryLabel.height + m_activatedDateLabel.height + m_statsLabel.height + m_statsLabel2.height + 3*m_bookInfoPanelVerticalPadding;
 
-			float add_height = Mathf.Max(desc_height, hist_height);
+			float add_height = Mathf.Max(desc_height, hist_height) + 2*m_bookInfoPanelVerticalPadding + m_historyTitleLabel.height;
 
-			m_historyTitleLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_historyTitleLabel.relativePosition += new Vector3 (0, -add_height+m_historyTitleLabel.height, 0f);
+			m_historyTitleLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_historyTitleLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMargin, m_bookInfoPanelVerticalPadding, 0f);
 
-			m_familiesHistoryLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_activatedDateLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_statsLabel.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_statsLabel2.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_activatedDateLabel.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height, 0f);
-			m_statsLabel.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height + padding, 0f);
-			m_statsLabel2.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height+m_statsLabel.height + 2*padding, 0f);
-			m_familiesHistoryLabel.relativePosition += new Vector3 (m_zonedBuildingInfoPanel.component.width/2, -add_height+m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height+m_statsLabel2.height+m_familiesHistoryLabel.height + 3*padding, 0f);
+			m_familiesHistoryLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_activatedDateLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_statsLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_statsLabel2.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_activatedDateLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height+2*m_bookInfoPanelVerticalPadding, 0f);
+			m_statsLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height + 3*m_bookInfoPanelVerticalPadding, 0f);
+			m_statsLabel2.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height + 4*m_bookInfoPanelVerticalPadding, 0f);
+			m_familiesHistoryLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height+m_statsLabel2.height + 5*m_bookInfoPanelVerticalPadding, 0f);
 
-			m_descriptionTextField.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.BottomLeft);
-			m_descriptionTextField.relativePosition += new Vector3 (0, -add_height+m_historyTitleLabel.height+desc_height, 0f);
+			m_familiesHistoryLabel.width = m_bookInfoPanelPageWidth;
 
+			m_descriptionTextField.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_descriptionTextField.relativePosition += new Vector3 (m_bookInfoPanelLeftMargin, 2*m_bookInfoPanelVerticalPadding+m_historyTitleLabel.height, 0f);
 
-			m_zonedBuildingInfoPanel.component.height = m_zonedBuildingInfoPanelInitialHeight + add_height;
+			if(add_height > m_bookInfoPanel.height)
+				m_bookInfoPanel.height = /*m_zonedBuildingInfoPanelInitialHeight + */add_height;
+			else
+				m_bookInfoPanel.height = m_bookInfoPanelInitialHeight;
 
 			last_desc_height = desc_height;
+
 		}
 
 		private void Update()
@@ -316,6 +373,42 @@ namespace ResilientOwners
 			}
 		}
 
+		//sync info with extended building mod
+
+		UILabel m_extendedBuildingInfoDescriptionLabel;
+		UIButton m_extendedBuildingInfoDescriptionButton;
+
+		void referenceExtendedBuildingsInfoModUIelements()
+		{
+			UILabel[] labels = m_extendedBuildingInfo.gameObject.GetComponents<UILabel>();
+			CODebug.Log(LogChannel.Modding, "number of labels = "+labels.Length);
+			m_extendedBuildingInfoDescriptionLabel = labels[labels.Length-1];
+
+			m_extendedBuildingInfoDescriptionButton = m_extendedBuildingInfo.gameObject.GetComponent<UIButton>();
+		}
+
+		string takeDescriptionFromExtendedBuildingsInfo()
+		{
+			if (m_extendedBuildingInfoDescriptionButton == null)
+				return "";
+			return m_extendedBuildingInfoDescriptionLabel.text;
+		}
+
+		void hideDescriptionExtendedBuildingsInfo()
+		{
+			if (m_extendedBuildingInfoDescriptionButton == null)
+				return;
+			m_extendedBuildingInfoDescriptionLabel.isVisible = false;
+			m_extendedBuildingInfoDescriptionButton.isVisible = false;
+		}
+
+		void showDescriptionExtendedBuildingsInfo()
+		{
+			if (m_extendedBuildingInfoDescriptionButton == null)
+				return;
+			m_extendedBuildingInfoDescriptionLabel.isVisible = true;
+			m_extendedBuildingInfoDescriptionButton.isVisible = true;
+		}
 	}
 }
 

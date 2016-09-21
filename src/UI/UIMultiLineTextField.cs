@@ -2130,7 +2130,7 @@ namespace ResilientOwners
 			total_height += stringAreaSize.y;
 
 			//this.height = total_height;
-			//this.height = stringAreaSize.y;
+			this.height = stringAreaSize.y;
 
 			if (m_lastHeight != total_height) {
 				m_lastHeight = total_height;
@@ -2154,18 +2154,22 @@ namespace ResilientOwners
 			}
 		}
 
+		private Color32 m_savedTextColor = Color.black;
 		void CheckDefaultText()
 		{
+			m_savedTextColor = textColor;
 			if(text.Length == 0 || text.Equals(defaultText))
 			{
 				text = defaultText;
 				selectOnFocus = true;
-				textColor = this.disabledTextColor;
+				//m_savedTextColor = textColor;
+				//textColor = this.disabledTextColor;
 			}
 			else
 			{
 				selectOnFocus = false;
-				textColor = this.textColor;
+				//if(m_savedTextColor != Color.black)
+					//extColor = m_savedTextColor;
 			}
 		}
 	}

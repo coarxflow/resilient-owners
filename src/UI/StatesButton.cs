@@ -46,7 +46,7 @@ namespace ResilientOwners
 
 		/*********** custom icons *************/
 
-		UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight, int spriteCountHor) {
+		public static UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight, int spriteCountHor) {
 
 			Texture2D tex = new Texture2D(spriteWidth * spriteCountHor, spriteHeight, TextureFormat.ARGB32, false);
 			tex.filterMode = FilterMode.Bilinear;

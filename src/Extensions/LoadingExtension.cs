@@ -1,5 +1,6 @@
 using ICities;
 using UnityEngine;
+using ColossalFramework.UI;
 
 namespace ResilientOwners
 {
@@ -29,8 +30,14 @@ namespace ResilientOwners
 			else
 				m_info.InitializeList();
 
+			UIPanel extensionTarget = null;
+			//does extended building info mods exist?
+			GameObject extendedBuildingsInfo = GameObject.Find("buildingWindowObject");
+			if(extendedBuildingsInfo != null)
+				extensionTarget = (UIPanel) extendedBuildingsInfo.GetComponent("BuildingInfoWindow5");
+
 			//add mod's components to the UI
-			m_UI = ResilientUI.Install(m_infoObject, m_info);
+			m_UI = ResilientUI.Install(m_infoObject, m_info, extensionTarget);
 
 			//bind objects
 			BookKeeper.s_info = m_info;

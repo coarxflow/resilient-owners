@@ -44,7 +44,7 @@ namespace ResilientOwners
 						{
 							s_data[i].idsBuffer.Clear();
 						}
-						CODebug.Log (LogChannel.Modding, Mod.modName+" - succesful loading data");
+						CODebug.Log (LogChannel.Modding, Mod.modName+" - successful loading data");
 						
 					} else {
 

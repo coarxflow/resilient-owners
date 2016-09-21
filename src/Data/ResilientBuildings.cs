@@ -172,7 +172,7 @@ namespace ResilientOwners
 			string ret;
 			if(ri.idsBuffer.Count > 0)
 			{
-				ret = Localization.GetFamiliesHistory();
+				ret = Localization.GetFamiliesHistory()+"\n";
 				for(int i = 0; i < ri.idsBuffer.Count; i++)
 				{
 					int family = Singleton<CitizenManager>.instance.m_citizens.m_buffer[Singleton<CitizenManager>.instance.m_units.m_buffer[ri.idsBuffer[i]].m_citizen0].m_family;
@@ -260,7 +260,7 @@ namespace ResilientOwners
 			string ret;
 			if(ri.idsBuffer.Count > 0)
 			{
-				ret = Localization.GetWorkersHistory();
+				ret = Localization.GetWorkersHistory()+"\n";
 				for(int i = 0; i < ri.idsBuffer.Count; i++)
 				{
 					ret += Singleton<CitizenManager>.instance.GetCitizenName(ri.idsBuffer[i]);
