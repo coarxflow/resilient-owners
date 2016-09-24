@@ -123,7 +123,7 @@ namespace ResilientOwners
 							}
 					}
 				}
-
+				instance.m_buildings.m_buffer[buildingID].m_electricityProblemTimer = 0;
 
 				if(build.resiliencyActivated)
 				{

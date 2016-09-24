@@ -230,7 +230,7 @@ namespace ResilientOwners
 					name = Locale.Get(name, randomizer2.Int32(Locale.Count(name)));
 					name = name.Substring(4);//remove placeholder in front
 
-					if(m_resilients[resilient_index].namesBuffer.LastIndexOf(name) < index_families_before_now) //-1 if family was never present, otherwise check if it is not currently in
+					if(m_resilients[resilient_index].namesBuffer.Count == 0 || m_resilients[resilient_index].namesBuffer.LastIndexOf(name) < index_families_before_now) //-1 if family was never present, otherwise check if it is not currently in
 					{
 						m_resilients[resilient_index].namesBuffer.Add(name);
 					}
