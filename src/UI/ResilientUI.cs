@@ -179,14 +179,20 @@ namespace ResilientOwners
 			m_statsLabel2.textColor = m_bookTextColor;
 			m_statsLabel2.width = m_bookInfoPanelPageWidth;
 
-//			m_zonedBuildingInfoPanelComponent.eventVisibilityChanged +=(component, param) =>
+//			m_zonedBuildingInfoPanel.component.eveeventVisibilityChanged +=(component, param) =>
 //			{
 //				if(param)
 //					OnSelected();
-//					//m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
 //			};
 
+			//m_zonedBuildingInfoPanel.m_IsEmbbeded = true;//one of the condition call to OnPositionChanged, ensure it
 			m_zonedBuildingInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
+			{
+				if(m_zonedBuildingInfoPanel.component.isVisible)
+					OnSelected();
+			};
+
+			m_zonedBuildingInfoPanel.component.eventOpacityChanged += (inst1, inst2) =>
 			{
 				if(m_zonedBuildingInfoPanel.component.isVisible)
 					OnSelected();
@@ -204,7 +210,7 @@ namespace ResilientOwners
 				return;
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 			if (buildIndex != -1) {
-				ResilientBuildings.ResilientInfo ri = m_info.m_resilients [buildIndex];
+				ResilientBuildings.ResilientInfoV1 ri = m_info.m_resilients [buildIndex];
 				ri.description = desc;
 				m_info.m_resilients [buildIndex] = ri;
 			}
@@ -234,12 +240,14 @@ namespace ResilientOwners
 				else
 					m_resilientStateButton.SetState(1);
 				ShowHistory();
+				CheckUpdateUI(m_currentSelectedBuildingID);
 			} else {
 				m_resilientStateButton.SetState(0);
 				HideHistory();
 			}
 
 			m_allowEvents = true;
+
 
 			m_bookInfoPanel.Invalidate();
 		}
@@ -331,9 +339,9 @@ namespace ResilientOwners
 
 		}
 
-		private void Update()
+		public void CheckUpdateUI(ushort buildingID)
 		{
-			if(m_currentSelectedBuildingID <= 0)
+			if(m_currentSelectedBuildingID != buildingID)
 				return;
 
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);

@@ -27,8 +27,8 @@ namespace ResilientOwners
 			m_info = m_infoObject.AddComponent<ResilientBuildings>();
 			if(BookKeeper.s_data != null)
 				m_info.m_resilients = BookKeeper.s_data;
-			else
-				m_info.InitializeList();
+			
+			m_info.InitializeList();
 
 			UIPanel extensionTarget = null;
 			//does extended building info mods exist?
@@ -43,6 +43,7 @@ namespace ResilientOwners
 			BookKeeper.s_info = m_info;
 			LevelUpExtension.s_info = m_info;
 			ResilientExpresser.s_info = m_info;
+			ResilientExpresser.s_UI = m_UI;
 			IncomeTracker.s_info = m_info;
 
 			CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");

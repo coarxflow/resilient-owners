@@ -90,7 +90,7 @@ namespace ResilientOwners
 					int buildIndex = s_info.GetResilientBuildingIndex((ushort) buildingID);
 					if(buildIndex != -1)
 					{
-						ResilientBuildings.ResilientInfo ri = s_info.m_resilients[buildIndex];
+						ResilientBuildings.ResilientInfoV1 ri = s_info.m_resilients[buildIndex];
 						ri.totalIncome += amount;
 						s_info.m_resilients[buildIndex] = ri;
 					}

@@ -10,6 +10,7 @@ namespace ResilientOwners
 	public class ResilientExpresser : ThreadingExtensionBase
 	{
 		public static ResilientBuildings s_info;
+		public static ResilientUI s_UI;
 		
 
 		public override void OnCreated(IThreading threading)
@@ -39,6 +40,16 @@ namespace ResilientOwners
 
 		public override void OnBeforeSimulationFrame()
 		{
+			BuildingManager instance = Singleton<BuildingManager>.instance;
+			for(int i = 0; i < s_info.m_resilients.Count; i++)
+			{
+				if(s_info.m_resilients[i].resiliencyActivated)
+				{
+
+					//building will not be removed when dezoning, it must be bulldozed
+					instance.m_buildings.m_buffer[s_info.m_resilients[i].buildingID].m_flags &= ~Building.Flags.ZonesUpdated;
+				}
+			}
 		}
 
 		public override void OnAfterSimulationFrame()
@@ -46,7 +57,7 @@ namespace ResilientOwners
 		}
 
 		public static int UPDATE_EACH_TICKS = 20;
-		public static int REMOVE_AFTER_UPDATES = 10;
+		public static int REMOVE_AFTER_UPDATES = 100;
 
 		public override void OnAfterSimulationTick()
 		{
@@ -64,7 +75,7 @@ namespace ResilientOwners
 			{
 				ushort buildingID = s_info.m_resilients[i].buildingID;
 
-				ResilientBuildings.ResilientInfo build = s_info.m_resilients[i];
+				ResilientBuildings.ResilientInfoV1 build = s_info.m_resilients[i];
 
 				if(s_info.m_resilients[i].unsuscribed) //building unsuscribed
 				{
@@ -121,10 +132,14 @@ namespace ResilientOwners
 					//instance.m_buildings.m_buffer[buildingID].m_problems = Notification.Problem.TurnedOff;
 
 					//building will not be removed when dezoning, it must be bulldozed
-					instance.m_buildings.m_buffer[buildingID].m_flags &= ~Building.Flags.ZonesUpdated;
+					//instance.m_buildings.m_buffer[buildingID].m_flags &= ~Building.Flags.ZonesUpdated;
 
 					//avoid major problem to trigger abandonment
 					instance.m_buildings.m_buffer[buildingID].m_majorProblemTimer = 0;
+					instance.m_buildings.m_buffer[buildingID].m_problems &= ~Notification.Problem.MajorProblem;
+
+					if(instance.m_buildings.m_buffer[buildingID].m_problems != Notification.Problem.None)
+						instance.m_buildings.m_buffer[buildingID].m_happiness = (byte) ((int) ((int) instance.m_buildings.m_buffer[buildingID].m_happiness * 4f/3f));
 
 					//reoccupy building when it is abandoned/burned down
 					if((instance.m_buildings.m_buffer[buildingID].m_flags & (Building.Flags.Abandoned | Building.Flags.BurnedDown)) != Building.Flags.None)
@@ -166,7 +181,7 @@ namespace ResilientOwners
 						instance.m_buildings.m_buffer[buildingID].m_problems = Notification.Problem.None;
 					}
 
-					if(instance.m_buildings.m_buffer[buildingID].GetLastFrameData().m_fireDamage > 250) //extinguish fire at last minute
+					if(instance.m_buildings.m_buffer[buildingID].GetLastFrameData().m_fireDamage > 230) //extinguish fire at last minute
 					{
 						instance.m_buildings.m_buffer[buildingID].m_fireIntensity = 0;
 //						Building.Frame carpentry = instance.m_buildings.m_buffer[buildingID].GetLastFrameData();
@@ -176,6 +191,7 @@ namespace ResilientOwners
 					}
 				}
 
+				s_UI.CheckUpdateUI(buildingID);
 			}
 		}
 
