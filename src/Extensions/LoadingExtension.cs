@@ -27,7 +27,10 @@ namespace ResilientOwners
 			m_info = m_infoObject.AddComponent<ResilientBuildings>();
 			if(BookKeeper.s_data != null)
 				m_info.m_resilients = BookKeeper.s_data;
-			
+
+			//localization
+			Localization.trad = new English();
+
 			m_info.InitializeList();
 
 			UIPanel extensionTarget = null;
@@ -35,6 +38,7 @@ namespace ResilientOwners
 			GameObject extendedBuildingsInfo = GameObject.Find("buildingWindowObject");
 			if(extendedBuildingsInfo != null)
 				extensionTarget = (UIPanel) extendedBuildingsInfo.GetComponent("BuildingInfoWindow5");
+
 
 			//add mod's components to the UI
 			m_UI = ResilientUI.Install(m_infoObject, m_info, extensionTarget);

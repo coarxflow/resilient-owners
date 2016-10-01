@@ -1686,7 +1686,8 @@ namespace ResilientOwners
 		private void RenderText()
 		{
 			float num = base.PixelsToUnits();
-			Vector2 vector = new Vector2(base.size.x - (float)this.padding.horizontal, base.size.y - (float)this.padding.vertical);
+			//Vector2 vector = new Vector2(base.size.x - (float)this.padding.horizontal, base.size.y - (float)this.padding.vertical);
+			Vector2 vector = new Vector2(base.size.x - (float)this.padding.horizontal, 1000f); //unlimited y maxSize
 			Vector3 vector2 = base.pivot.TransformToUpperLeft(base.size, base.arbitraryPivotOffset);
 			Vector3 vectorOffset = new Vector3(vector2.x + (float)this.padding.left, vector2.y - (float)this.padding.top, 0f) * num;
 			string text = (this.isPasswordField && !string.IsNullOrEmpty(this.passwordCharacter)) ? this.PasswordDisplayText() : this.m_Text;
@@ -2111,7 +2112,7 @@ namespace ResilientOwners
 
 		bool m_autoAdjustHeight = false;
 		float m_lastHeight = 0f;
-		void AutoHeight()
+		public void AutoHeight()
 		{
 //			if (!m_autoAdjustHeight)
 //				return;
@@ -2130,11 +2131,11 @@ namespace ResilientOwners
 			total_height += stringAreaSize.y;
 
 			//this.height = total_height;
-			this.height = stringAreaSize.y;
+			this.height = Mathf.Max(stringAreaSize.y, this.height);
 
 			if (m_lastHeight != total_height) {
 				m_lastHeight = total_height;
-				this.Invalidate();
+				//this.Invalidate();
 				eventHeightChange(this, total_height);
 			}
 		}

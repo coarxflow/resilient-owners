@@ -59,17 +59,19 @@
     <Compile Include="src\Data\ResilientBuildings.cs" />
     <Compile Include="src\UI\ResilientUI.cs" />
     <Compile Include="src\Extensions\BookKeeper.cs" />
-    <Compile Include="src\Data\Localization.cs" />
     <Compile Include="src\Extensions\IncomeTracker.cs" />
     <Compile Include="src\UI\UIGoodsWrapper.cs" />
     <Compile Include="src\UI\StatesButton.cs" />
     <Compile Include="src\UI\BookPanel.cs" />
+    <Compile Include="src\Localization\Localization.cs" />
+    <Compile Include="src\Localization\English.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\Extensions\" />
     <Folder Include="src\UI\" />
     <Folder Include="src\Data\" />
+    <Folder Include="src\Localization\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icons\book.png" />

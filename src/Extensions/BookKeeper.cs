@@ -23,7 +23,6 @@ namespace ResilientOwners
 		public override void OnCreated(ISerializableData serializedData) {
 			base.OnCreated(serializedData);
 			m_serializedData = serializedData;
-			CODebug.Log (LogChannel.Modding, Mod.modName+" - bookkepper created");
 		}
 		
 		public override void OnReleased() {
@@ -50,7 +49,6 @@ namespace ResilientOwners
 					} else {
 						//save had no data
 					}
-					CODebug.Log (LogChannel.Modding, Mod.modName+" - saved data version = "+s_savedDataVersion);
 
 					if(s_savedDataVersion >= 0 && s_savedDataVersion <= SAVE_DATA_VERSION)
 					{

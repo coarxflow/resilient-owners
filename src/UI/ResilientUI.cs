@@ -10,6 +10,7 @@
 using System;
 using System.Reflection;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using ColossalFramework;
 using ColossalFramework.Globalization;
@@ -38,15 +39,16 @@ namespace ResilientOwners
 		Color32 m_bookTextColor = Color.white;
 
 		UILabel m_historyTitleLabel;
+		UILabel m_recordTitleLabel;
 		UIMultilineTextField m_descriptionTextField;
 		StatesButton m_resilientStateButton;
 		UILabel m_familiesHistoryLabel;
 		UILabel m_activatedDateLabel;
+		UILabel m_ageLabel;
 		UILabel m_statsLabel;
-		UILabel m_statsLabel2;
 
 		UICurrencyWrapper income =  new UICurrencyWrapper(0L);
-		UIGoodsWrapper industryGoods =  new UIGoodsWrapper(0);
+		//UIGoodsWrapper industryGoods =  new UIGoodsWrapper(0);
 		UIGoodsWrapper industryGoods2 =  new UIGoodsWrapper(0);
 
 		ushort m_currentSelectedBuildingID;
@@ -62,7 +64,13 @@ namespace ResilientOwners
 			if(extendedBuildingInfo != null)
 			{
 				rui.m_extendedBuildingInfo = extendedBuildingInfo;
-				//rui.referenceExtendedBuildingsInfoModUIelements();
+				try {
+					rui.referenceExtendedBuildingsInfoModUIelements();
+				}
+				catch(Exception e)
+				{
+					CODebug.Error (LogChannel.Modding, Mod.modName+" - error referencing component of ExtendedBuildingsInfo mod");
+				}
 			}
 
 			rui.AddComponents();
@@ -93,8 +101,15 @@ namespace ResilientOwners
 
 			m_historyTitleLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_historyTitleLabel.name = "History Title";
-			m_historyTitleLabel.text = Localization.GetHistoryTitle();
+			m_historyTitleLabel.textScale = 1.2f;
+			m_historyTitleLabel.text = Localization.trad.GetHistoryTitle();
 			m_historyTitleLabel.textColor = m_bookTextColor;
+
+			m_recordTitleLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
+			m_recordTitleLabel.name = "Record Title";
+			m_recordTitleLabel.textScale = 1.2f;
+			m_recordTitleLabel.text = Localization.trad.GetRecordTitle();
+			m_recordTitleLabel.textColor = m_bookTextColor;
 
 			m_descriptionTextField = m_bookInfoPanel.AddUIComponent<UIMultilineTextField> ();
 			m_descriptionTextField.name = "Building Description";
@@ -104,23 +119,24 @@ namespace ResilientOwners
 			m_descriptionTextField.height = 100f;
 			m_descriptionTextField.disabledTextColor = new Color32(7, 7, 7, 255);
 			m_descriptionTextField.textColor = m_bookTextColor;
+			//m_descriptionTextField.font = UIDynamicFont.FindByName("ArchitectsDaughter");
 			m_descriptionTextField.eventTextSubmitted += (component, param) =>
 			{
 				SaveDescription(param);
 			};
 //			m_descriptionTextField.title = "Description";
 //			m_descriptionTextField.showTitle = true;
-			m_descriptionTextField.defaultText = Localization.GetDescriptionEmpty();
+			m_descriptionTextField.defaultText = Localization.trad.GetDescriptionEmpty();
 			m_descriptionTextField.eventHeightChange += (component, height) => {
-				ResizePanelHeight(height);
+				ResizePanelHeight();
 			};
 
 			int spriteWidth = 32;
 			int spriteHeight = 32;
 			string[] tooltips = {
-				Mod.modName+": disabled", 
-				Mod.modName+": history is enabled",
-				Mod.modName+": history and resiliency enabled"
+				Localization.trad.GetTooltipOff(), 
+				Localization.trad.GetTooltipHistoryOn(),
+				Localization.trad.GetTooltipResiliencyOn()
 			};
 			m_resilientStateButton = new StatesButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, 3, "icons.book.png", "ResilientOwners", tooltips);
 
@@ -150,8 +166,8 @@ namespace ResilientOwners
 
 			m_familiesHistoryLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_familiesHistoryLabel.name = "Families History";
-			m_familiesHistoryLabel.text = Localization.GetEmptyHouse();
-			m_familiesHistoryLabel.textScale = 0.8f;
+			m_familiesHistoryLabel.text = Localization.trad.GetEmptyHouse();
+			//m_familiesHistoryLabel.textScale = 0.8f;
 			m_familiesHistoryLabel.textColor = m_bookTextColor;
 			m_familiesHistoryLabel.width = m_bookInfoPanelPageWidth;
 			m_familiesHistoryLabel.wordWrap = true;
@@ -160,24 +176,29 @@ namespace ResilientOwners
 
 			m_activatedDateLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_activatedDateLabel.name = "Activation Date";
-			m_activatedDateLabel.text = Localization.GetActivationDate();
+			m_activatedDateLabel.text = Localization.trad.GetActivationDate();
 			m_activatedDateLabel.textScale = 0.8f;
 			m_activatedDateLabel.textColor = m_bookTextColor;
 			m_activatedDateLabel.width = m_bookInfoPanelPageWidth;
 
+			m_ageLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
+			m_ageLabel.name = "Age";
+			m_ageLabel.text = Localization.trad.GetActivationDate();
+			//m_activatedDateLabel.textScale = 0.8f;
+			m_ageLabel.textColor = m_bookTextColor;
+			m_ageLabel.width = m_bookInfoPanelPageWidth;
+
 			m_statsLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_statsLabel.name = "Stats";
-			m_statsLabel.text = Localization.GetAccumulatedIncome();
-			m_statsLabel.textScale = 0.8f;
+			m_statsLabel.text = Localization.trad.GetEmptyHouse();//long enough string
+			//m_statsLabel.textScale = 0.8f;
 			m_statsLabel.textColor = m_bookTextColor;
 			m_statsLabel.width = m_bookInfoPanelPageWidth;
+			m_statsLabel.wordWrap = true;
+			m_statsLabel.autoSize = false;
+			m_statsLabel.autoHeight = true;
 
-			m_statsLabel2 = m_bookInfoPanel.AddUIComponent<UILabel> ();
-			m_statsLabel2.name = "Stats 2";
-			m_statsLabel2.text = "";
-			m_statsLabel2.textScale = 0.8f;
-			m_statsLabel2.textColor = m_bookTextColor;
-			m_statsLabel2.width = m_bookInfoPanelPageWidth;
+			placeComponents();
 
 //			m_zonedBuildingInfoPanel.component.eveeventVisibilityChanged +=(component, param) =>
 //			{
@@ -249,16 +270,11 @@ namespace ResilientOwners
 			m_allowEvents = true;
 
 
-			m_bookInfoPanel.Invalidate();
+			//m_bookInfoPanel.Invalidate();
 		}
 
 		public void HideHistory()
 		{
-			m_descriptionTextField.isVisible = false;
-			m_familiesHistoryLabel.isVisible = false;
-			m_activatedDateLabel.isVisible = false;
-			m_statsLabel.isVisible = false;
-			m_statsLabel2.isVisible = false;
 			m_bookInfoPanel.isVisible = false;
 			if(m_extendedBuildingInfo != null)
 			{
@@ -271,71 +287,73 @@ namespace ResilientOwners
 		{
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 
-
 			m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
+
 			if(m_extendedBuildingInfo != null)
 			{
-				if(m_extendedBuildingInfoDescriptionButton == null)
-					referenceExtendedBuildingsInfoModUIelements();
-				if(m_info.m_resilients [buildIndex].description.Length == 0)
-				{
-					m_descriptionTextField.text = takeDescriptionFromExtendedBuildingsInfo();
-				}
-				hideDescriptionExtendedBuildingsInfo();
+				StartCoroutine(updateWithExtendedBuildingsInfoPresent(buildIndex));
 			}
-			m_descriptionTextField.isVisible = true;
+
+			m_activatedDateLabel.text = Localization.trad.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y");
 
 			if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
-				m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
+			{
+				m_statsLabel.isVisible = false;
+				m_familiesHistoryLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+				m_familiesHistoryLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_recordTitleLabel.height+m_ageLabel.height+ 5*m_bookInfoPanelVerticalPadding, 0f);
+			}
 			else
-				m_familiesHistoryLabel.text = m_info.GetWorkersHistoryList(buildIndex);
-			m_familiesHistoryLabel.isVisible = true;
-
-			m_activatedDateLabel.text = Localization.GetActivationDate() + ' ' + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("dd/MM/yyyy");
-			m_activatedDateLabel.isVisible = true;
-
-			m_statsLabel.isVisible = true;
-			m_statsLabel2.isVisible = true;
+			{
+				m_statsLabel.isVisible = true;
+				m_familiesHistoryLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+				m_familiesHistoryLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_recordTitleLabel.height+m_ageLabel.height+m_statsLabel.height + 7*m_bookInfoPanelVerticalPadding, 0f);
+			}
 
 			m_bookInfoPanel.isVisible = true;
 
-			ResizePanelHeight(0f);
+			m_descriptionTextField.AutoHeight();
 		}
 
-		float last_desc_height;
-		public void ResizePanelHeight(float desc_height)
+		void placeComponents()
 		{
-			if(desc_height == 0f)
-				desc_height = last_desc_height;
-
-			desc_height = m_descriptionTextField.getComposedHeight();
-			float hist_height = m_familiesHistoryLabel.height + m_activatedDateLabel.height + m_statsLabel.height + m_statsLabel2.height + 3*m_bookInfoPanelVerticalPadding;
-
-			float add_height = Mathf.Max(desc_height, hist_height) + 2*m_bookInfoPanelVerticalPadding + m_historyTitleLabel.height;
-
 			m_historyTitleLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
 			m_historyTitleLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMargin, m_bookInfoPanelVerticalPadding, 0f);
 
-			m_familiesHistoryLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
-			m_activatedDateLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
-			m_statsLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
-			m_statsLabel2.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
-			m_activatedDateLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height+2*m_bookInfoPanelVerticalPadding, 0f);
-			m_statsLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height + 3*m_bookInfoPanelVerticalPadding, 0f);
-			m_statsLabel2.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height + 4*m_bookInfoPanelVerticalPadding, 0f);
-			m_familiesHistoryLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_historyTitleLabel.height+m_activatedDateLabel.height+m_statsLabel.height+m_statsLabel2.height + 5*m_bookInfoPanelVerticalPadding, 0f);
-
-			m_familiesHistoryLabel.width = m_bookInfoPanelPageWidth;
-
 			m_descriptionTextField.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
 			m_descriptionTextField.relativePosition += new Vector3 (m_bookInfoPanelLeftMargin, 2*m_bookInfoPanelVerticalPadding+m_historyTitleLabel.height, 0f);
+
+			m_activatedDateLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.BottomLeft);
+			m_activatedDateLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMargin+m_bookInfoPanelPageWidth/4f, -m_bookInfoPanelVerticalPadding, 0f);
+
+
+			m_recordTitleLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopRight);
+			m_recordTitleLabel.relativePosition += new Vector3 (-m_bookInfoPanelLeftMargin, m_bookInfoPanelVerticalPadding, 0f);
+
+			m_familiesHistoryLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_ageLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+			m_statsLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+
+			m_ageLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_recordTitleLabel.height+3*m_bookInfoPanelVerticalPadding, 0f);
+			m_statsLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_recordTitleLabel.height+m_ageLabel.height + 5*m_bookInfoPanelVerticalPadding, 0f);
+			m_familiesHistoryLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_recordTitleLabel.height+m_ageLabel.height+m_statsLabel.height + 7*m_bookInfoPanelVerticalPadding, 0f);
+
+			m_statsLabel.width = m_bookInfoPanelPageWidth;
+			m_familiesHistoryLabel.width = m_bookInfoPanelPageWidth;
+
+		}
+
+		public void ResizePanelHeight()
+		{
+
+			float desc_height = m_descriptionTextField.getComposedHeight() + 4*m_bookInfoPanelVerticalPadding + m_historyTitleLabel.height + m_activatedDateLabel.height;
+			float hist_height = m_familiesHistoryLabel.height + m_ageLabel.height + m_statsLabel.height + 8*m_bookInfoPanelVerticalPadding + m_recordTitleLabel.height;
+
+			float add_height = Mathf.Max(desc_height, hist_height);
 
 			if(add_height > m_bookInfoPanel.height)
 				m_bookInfoPanel.height = /*m_zonedBuildingInfoPanelInitialHeight + */add_height;
 			else
 				m_bookInfoPanel.height = m_bookInfoPanelInitialHeight;
-
-			last_desc_height = desc_height;
 
 		}
 
@@ -347,36 +365,42 @@ namespace ResilientOwners
 			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 			if(buildIndex != -1)
 			{
-				income.Check(m_info.m_resilients [buildIndex].totalIncome);
-				m_statsLabel.text = Localization.GetAccumulatedIncome() + income.result;
 
 				BuildingInfo buildinfo = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info;
 				switch(buildinfo.m_class.m_service)
 				{
 					case ItemClass.Service.Commercial:
-						m_statsLabel2.text = "Clients served : " + m_info.m_resilients [buildIndex].totalVisits + " - Inside now : " + m_info.m_resilients [buildIndex].currentVisits;
+						m_statsLabel.text = Localization.trad.GetClientsAmount() + m_info.m_resilients [buildIndex].totalVisits;
 						break;
 					case ItemClass.Service.Industrial:
-					CODebug.Log(LogChannel.Modding, "examine AI "+buildinfo.m_buildingAI+" for "+Singleton<BuildingManager>.instance.GetBuildingName(m_currentSelectedBuildingID, default(InstanceID)));
 						bool extractor = buildinfo.m_buildingAI.GetType().Equals(typeof(IndustrialExtractorAI));
 
 						if(extractor)
 						{
-							industryGoods.Check(m_info.m_resilients [buildIndex].goodsBuffer2, buildinfo.m_class.m_subService, true);
+							//industryGoods.Check(m_info.m_resilients [buildIndex].goodsBuffer2, buildinfo.m_class.m_subService, true);
 							industryGoods2.Check(m_info.m_resilients [buildIndex].goodsBuffer3, buildinfo.m_class.m_subService, true);
-							m_statsLabel2.text = "Exported : " + industryGoods.result +", Stock : " + industryGoods2.result;
+							m_statsLabel.text = Localization.trad.GetExtractedAmount() + industryGoods2.result;
 						}
 						else
 						{
-							industryGoods.Check(m_info.m_resilients [buildIndex].goodsBuffer2, buildinfo.m_class.m_subService, false);
+							//industryGoods.Check(m_info.m_resilients [buildIndex].goodsBuffer2, buildinfo.m_class.m_subService, false);
 							industryGoods2.Check(m_info.m_resilients [buildIndex].goodsBuffer4, buildinfo.m_class.m_subService, false);
-							m_statsLabel2.text = "Imported : " + industryGoods.result +", Exported " + industryGoods2.result;
+							m_statsLabel.text =Localization.trad.GetProducedAmount() + industryGoods2.result;
 						}
 						break;
-					default:
-						m_statsLabel2.isVisible = false;
+					case ItemClass.Service.Office:
+						income.Check(m_info.m_resilients [buildIndex].totalIncome);
+						m_statsLabel.text = Localization.trad.GetAccumulatedIncome() + income.result;
 						break;
 				}
+
+				if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
+					m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
+				else
+					m_familiesHistoryLabel.text = m_info.GetWorkersHistoryList(buildIndex);
+
+				m_ageLabel.text = dateSpan(m_info.m_resilients [buildIndex].activatedDate, Singleton<SimulationManager>.instance.m_currentGameTime);
+			
 	
 			}
 		}
@@ -388,34 +412,86 @@ namespace ResilientOwners
 
 		void referenceExtendedBuildingsInfoModUIelements()
 		{
-			UILabel[] labels = m_extendedBuildingInfo.gameObject.GetComponents<UILabel>();
-			CODebug.Log(LogChannel.Modding, "number of labels = "+labels.Length);
-			m_extendedBuildingInfoDescriptionLabel = labels[labels.Length-1];
+			IList<UIComponent> comps = m_extendedBuildingInfo.components;
+			int labels = 0;
+			int buttons = 0;
+			for(int i = 0; i < comps.Count; i++)
+			{
+				if(comps[i].GetType().Equals(typeof(UILabel)))
+				{
+					labels++;
+					if(labels == 25)
+					{
+						m_extendedBuildingInfoDescriptionLabel = (UILabel)comps[i];
+					}
+				}
+				if(comps[i].GetType().Equals(typeof(UIButton)))
+				{
+					buttons++;
+					if(buttons == 1)
+					{
+						m_extendedBuildingInfoDescriptionButton = (UIButton)comps[i];
+					}
+				}
+			}
+			//m_extendedBuildingInfoDescriptionLabel = labels[labels.Length-1];
 
-			m_extendedBuildingInfoDescriptionButton = m_extendedBuildingInfo.gameObject.GetComponent<UIButton>();
+			//m_extendedBuildingInfoDescriptionButton = m_extendedBuildingInfo.gameObject.GetComponent<UIButton>();
 		}
 
-		string takeDescriptionFromExtendedBuildingsInfo()
+		IEnumerator updateWithExtendedBuildingsInfoPresent(int buildIndex)
 		{
-			if (m_extendedBuildingInfoDescriptionButton == null)
-				return "";
-			return m_extendedBuildingInfoDescriptionLabel.text;
-		}
-
-		void hideDescriptionExtendedBuildingsInfo()
-		{
-			if (m_extendedBuildingInfoDescriptionButton == null)
-				return;
-			m_extendedBuildingInfoDescriptionLabel.isVisible = false;
+			yield return null;
+			m_extendedBuildingInfoDescriptionButton.isVisible = true;
+			yield return null;
+			if(!m_extendedBuildingInfoDescriptionLabel.isVisible)
+			{
+				m_extendedBuildingInfoDescriptionButton.SimulateClick();
+				m_extendedBuildingInfoDescriptionWasOn = false;
+			}
+			else
+			{
+				m_extendedBuildingInfoDescriptionWasOn = true;
+			}
+			yield return new WaitForSeconds(0.2f); //wait for text update
+			if(m_info.m_resilients [buildIndex].description.Length == 0)
+			{
+				m_descriptionTextField.text = m_extendedBuildingInfoDescriptionLabel.text;
+			}
+			m_extendedBuildingInfoDescriptionButton.SimulateClick();
 			m_extendedBuildingInfoDescriptionButton.isVisible = false;
 		}
 
+		bool m_extendedBuildingInfoDescriptionWasOn = false;
 		void showDescriptionExtendedBuildingsInfo()
 		{
 			if (m_extendedBuildingInfoDescriptionButton == null)
 				return;
-			m_extendedBuildingInfoDescriptionLabel.isVisible = true;
+			//m_extendedBuildingInfoDescriptionLabel.isVisible = true;
+			if(m_extendedBuildingInfoDescriptionWasOn)
+			{
+				m_extendedBuildingInfoDescriptionButton.SimulateClick();
+				m_extendedBuildingInfoDescriptionWasOn = false;
+			}
 			m_extendedBuildingInfoDescriptionButton.isVisible = true;
+		}
+
+		string dateSpan(DateTime ancient, DateTime recent)
+		{
+			DateTime zeroTime = new DateTime(1, 1, 1);
+
+			TimeSpan span = recent - ancient;
+
+			DateTime spanDate = zeroTime + span;
+
+			// because we start at year 1 for the Gregorian 
+			// calendar, we must subtract a year here.
+			int years = spanDate.Year - 1;
+			int days = spanDate.DayOfYear;
+
+			return Localization.trad.GetAge(years, days);
+
+
 		}
 	}
 }

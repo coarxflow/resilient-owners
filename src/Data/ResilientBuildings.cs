@@ -79,17 +79,9 @@ namespace ResilientOwners
 		{
 			if (m_resilients == null) {
 				m_resilients = new List<ResilientInfoV1> ();
-				CODebug.Log (LogChannel.Modding, "initialize resilient building list");
+				//CODebug.Log (LogChannel.Modding, "initialize resilient building list");
 			} else {
-				CODebug.Log (LogChannel.Modding, "a resilient building list has benn loaded");
-				if(m_resilients.Count > 0)
-				{
-					for(int i = 0; i < m_resilients.Count; i++)
-					{
-						string comp = GetFamiliesList(i)+" "+GetWorkersHistoryList(i);
-						CODebug.Log(LogChannel.Modding, "building "+i+" : "+comp);
-					}
-				}
+				//CODebug.Log (LogChannel.Modding, "a resilient building list has benn loaded");
 			}
 		}
 
@@ -105,8 +97,7 @@ namespace ResilientOwners
 		}
 
 		public void AddBuilding(ushort buildingID, bool resilient) {
-			CODebug.Log(LogChannel.Modding, "add building "+Singleton<BuildingManager>.instance.GetBuildingName(buildingID, default(InstanceID))+" "+Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].Info.m_class.m_service);
-
+			
 			ResilientInfoV1 ri;
 
 			int buildIndex = GetResilientBuildingIndex(buildingID);
@@ -245,17 +236,17 @@ namespace ResilientOwners
 			string ret;
 			if(ri.namesBuffer.Count > 0)
 			{
-				ret = Localization.GetFamiliesHistory()+"\n";
+				ret = Localization.trad.GetFamiliesHistory()+"\n";
 				for(int i = 0; i < ri.namesBuffer.Count; i++)
 				{
 					ret += ri.namesBuffer[i];//remove placeholder in front
 					if(i < ri.namesBuffer.Count-1)
-						ret += Localization.GetFamiliesSeparator();
+						ret += Localization.trad.GetFamiliesSeparator();
 				}
 			}
 			else
 			{
-				ret = Localization.GetEmptyHouse();
+				ret = Localization.trad.GetEmptyHouse();
 			}
 
 			return ret;
@@ -317,7 +308,7 @@ namespace ResilientOwners
 				string name = Singleton<CitizenManager>.instance.GetCitizenName(current_workers_ids[i]);
 				if(name == null || name.Length == 0)
 				{
-					CODebugBase<LogChannel>.Error(LogChannel.Modding, "empty citizen name for " + current_workers_ids[i]);
+					//CODebugBase<LogChannel>.Error(LogChannel.Modding, "empty citizen name for " + current_workers_ids[i]);
 				}
 				else 
 				if(!m_resilients[resilient_index].namesBuffer.Contains(name))
@@ -334,17 +325,17 @@ namespace ResilientOwners
 			string ret;
 			if(ri.namesBuffer.Count > 0)
 			{
-				ret = Localization.GetWorkersHistory()+"\n";
-				for(int i = 0; i < ri.namesBuffer.Count; i++)
-				{
-					ret += ri.namesBuffer[i];
-					if(i < ri.namesBuffer.Count-1)
-						ret += Localization.GetFamiliesSeparator();
-				}
+				ret = Localization.trad.GetWorkersHistory()+ri.namesBuffer.Count;//+"\n";
+//				for(int i = 0; i < ri.namesBuffer.Count; i++)
+//				{
+//					ret += ri.namesBuffer[i];
+//					if(i < ri.namesBuffer.Count-1)
+//						ret += Localization.trad.GetFamiliesSeparator();
+//				}
 			}
 			else
 			{
-				ret = Localization.GetEmptyFacility();
+				ret = Localization.trad.GetEmptyFacility();
 			}
 
 			return ret;
