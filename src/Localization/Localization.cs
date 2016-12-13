@@ -28,7 +28,7 @@ namespace ResilientOwners
 
 		public abstract string GetFamiliesSeparator();
 
-		public abstract string GetWorkersHistory();
+        public abstract string GetWorkersHistory(int amount);
 
 		public abstract string GetEmptyFacility();
 
@@ -36,6 +36,22 @@ namespace ResilientOwners
 		public abstract string GetExtractedAmount();
 
 		public abstract string GetProducedAmount();
+
+        public abstract string GetIndustrialGenericGoodsDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialFarmingGoodsDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialForestryExtractorDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialForestryGoodsDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialOilExtractorDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialOilGoodsDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialOreExtractorDenomination(float amount, bool litteral);
+
+        public abstract string GetIndustrialOreGoodsDenomination(float amount, bool litteral);
 
 		//commercial clients stats
 		public abstract string GetClientsAmount();

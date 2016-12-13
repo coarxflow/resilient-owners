@@ -1,6 +1,6 @@
 using ColossalFramework;
 using ColossalFramework.Globalization;
-using ColossalFramework.Steamworks;
+using ColossalFramework.PlatformServices;
 using ColossalFramework.UI;
 using System;
 using System.Collections;
@@ -933,17 +933,17 @@ namespace ResilientOwners
 		
 		protected override void OnMouseUp(UIMouseEventParameter p)
 		{
-			if (!this.readOnly && p.buttons.IsFlagSet(UIMouseButton.Left) && Steam.ShowGamepadTextInput(this.isPasswordField ? GamepadTextInputMode.TextInputModePassword : GamepadTextInputMode.TextInputModeNormal, GamepadTextInputLineMode.TextInputLineModeSingleLine, "Input", this.maxLength, this.text))
+			if (!this.readOnly && p.buttons.IsFlagSet(UIMouseButton.Left) && PlatformService.ShowGamepadTextInput(this.isPasswordField ? GamepadTextInputMode.TextInputModePassword : GamepadTextInputMode.TextInputModeNormal, GamepadTextInputLineMode.TextInputLineModeSingleLine, "Input", this.maxLength, this.text))
 			{
 				p.Use();
-				Steam.eventSteamGamepadInputDismissed += new Steam.SteamGamepadInputDismissedHandler(this.OnSteamInputDismissed);
+                PlatformService.eventSteamGamepadInputDismissed += new PlatformService.SteamGamepadInputDismissedHandler(this.OnSteamInputDismissed);
 			}
 			base.OnMouseUp(p);
 		}
 		
 		private void OnSteamInputDismissed(string str)
 		{
-			Steam.eventSteamGamepadInputDismissed -= new Steam.SteamGamepadInputDismissedHandler(this.OnSteamInputDismissed);
+            PlatformService.eventSteamGamepadInputDismissed -= new PlatformService.SteamGamepadInputDismissedHandler(this.OnSteamInputDismissed);
 			if (str != null)
 			{
 				this.text = str;
@@ -1687,7 +1687,7 @@ namespace ResilientOwners
 		{
 			float num = base.PixelsToUnits();
 			//Vector2 vector = new Vector2(base.size.x - (float)this.padding.horizontal, base.size.y - (float)this.padding.vertical);
-			Vector2 vector = new Vector2(base.size.x - (float)this.padding.horizontal, 1000f); //unlimited y maxSize
+			Vector2 vector = new Vector2(base.size.x - (float)this.padding.horizontal, Screen.height);
 			Vector3 vector2 = base.pivot.TransformToUpperLeft(base.size, base.arbitraryPivotOffset);
 			Vector3 vectorOffset = new Vector3(vector2.x + (float)this.padding.left, vector2.y - (float)this.padding.top, 0f) * num;
 			string text = (this.isPasswordField && !string.IsNullOrEmpty(this.passwordCharacter)) ? this.PasswordDisplayText() : this.m_Text;
@@ -2131,11 +2131,11 @@ namespace ResilientOwners
 			total_height += stringAreaSize.y;
 
 			//this.height = total_height;
-			this.height = Mathf.Max(stringAreaSize.y, this.height);
+			this.height = stringAreaSize.y;
 
 			if (m_lastHeight != total_height) {
 				m_lastHeight = total_height;
-				//this.Invalidate();
+				this.Invalidate();
 				eventHeightChange(this, total_height);
 			}
 		}

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -8,6 +8,8 @@
     <RootNamespace>ResilientOwners</RootNamespace>
     <AssemblyName>ResilientOwners</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>True</DebugSymbols>
@@ -21,8 +23,8 @@
     <PlatformTarget>x86</PlatformTarget>
     <CustomCommands>
       <CustomCommands>
-        <Command type="AfterBuild" command="xcopy /Y &quot;C:\Users\Loïc\Documents\mods\ResilientOwners\bin\${ProjectConfigName}\${SolutionName}.dll&quot; &quot;C:\Users\Loïc\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\${SolutionName}.dll&quot;" workingdir="${ProjectDir}" externalConsole="True" />
-        <Command type="BeforeBuild" command="cmd /c &quot;IF EXIST 'C:\Users\Loïc\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\${SolutionName}.dll')&quot;" workingdir="${ProjectDir}" externalConsole="True" />
+        <Command type="AfterBuild" command="xcopy /Y &quot;C:\Users\Loïc\Documents\mods\ResilientOwners\bin\Debug\${SolutionName}.dll&quot; &quot;C:\Users\Loïc\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\${SolutionName}.dll&quot;" workingdir="${SolutionDir}" externalConsole="True" />
+        <Command type="BeforeBuild" command="cmd /c &quot;IF EXIST 'C:\Users\Loïc\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\${SolutionName}.dll')&quot;" workingdir="${SolutionDir}" externalConsole="True" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -37,20 +39,6 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="ICities">
-      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
-    </Reference>
-    <Reference Include="ColossalManaged">
-      <HintPath>..\..\..\..\..\..\Program Files %28x86%29\Steam\SteamApps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="src\Mod.cs" />
     <Compile Include="src\Extensions\LevelUpExtension.cs" />
     <Compile Include="src\Extensions\LoadingExtension.cs" />
@@ -63,18 +51,39 @@
     <Compile Include="src\UI\UIGoodsWrapper.cs" />
     <Compile Include="src\UI\StatesButton.cs" />
     <Compile Include="src\UI\BookPanel.cs" />
-    <Compile Include="src\Localization\Localization.cs" />
     <Compile Include="src\Localization\English.cs" />
+    <Compile Include="src\Localization\Localization.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\" />
-    <Folder Include="src\Extensions\" />
-    <Folder Include="src\UI\" />
-    <Folder Include="src\Data\" />
-    <Folder Include="src\Localization\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="icons\book.png" />
     <EmbeddedResource Include="icons\book_bckgrnd.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="ColossalManaged, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
+    </Reference>
+    <Reference Include="ICities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>SET FileTarget="C:\Users\Loic\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\ResilientOwners.dll"
+IF EXIST %25FileTarget%25 del /F %25FileTarget%25</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>SET FileSource="D:\Documents\mods\ResilientOwners\bin\Debug\ResilientOwners.dll"
+SET FileTarget="C:\Users\Loic\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\ResilientOwners.dll"
+copy %25FileSource%25 %25FileTarget%25 /y</PostBuildEvent>
+  </PropertyGroup>
 </Project>

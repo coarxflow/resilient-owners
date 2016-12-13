@@ -325,7 +325,7 @@ namespace ResilientOwners
 			string ret;
 			if(ri.namesBuffer.Count > 0)
 			{
-				ret = Localization.trad.GetWorkersHistory()+ri.namesBuffer.Count;//+"\n";
+				ret = Localization.trad.GetWorkersHistory(ri.namesBuffer.Count);//+"\n";
 //				for(int i = 0; i < ri.namesBuffer.Count; i++)
 //				{
 //					ret += ri.namesBuffer[i];

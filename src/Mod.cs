@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
 [assembly: AssemblyProduct ("ResilientOwners")]
-[assembly: AssemblyCopyright ("CoarxFlow")]
+[assembly: AssemblyCopyright ("Copyright ©  2015")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 

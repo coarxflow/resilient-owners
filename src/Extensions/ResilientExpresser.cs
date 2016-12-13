@@ -40,42 +40,30 @@ namespace ResilientOwners
 
 		public override void OnBeforeSimulationFrame()
 		{
-			BuildingManager instance = Singleton<BuildingManager>.instance;
-			for(int i = 0; i < s_info.m_resilients.Count; i++)
-			{
-				if(s_info.m_resilients[i].resiliencyActivated)
-				{
-
-					//building will not be removed when dezoning, it must be bulldozed
-					instance.m_buildings.m_buffer[s_info.m_resilients[i].buildingID].m_flags &= ~Building.Flags.ZonesUpdated;
-				}
-			}
 		}
 
-//		public override void OnAfterSimulationFrame()
-//		{
-//		}
-
-		//public static int UPDATE_EACH_TICKS = 20;
-		public static int REMOVE_AFTER_UPDATES = 1000;
-
 		public override void OnAfterSimulationFrame()
+		{
+		}
+
+		public static int UPDATE_EACH_TICKS = 20;
+		public static int REMOVE_AFTER_UPDATES = 10;
+
+		public override void OnAfterSimulationTick()
 		{
 			if(s_info == null)
 				return;
 
 			BuildingManager instance = Singleton<BuildingManager>.instance;
 
-			int num6 = (int)(Singleton<SimulationManager>.instance.m_currentFrameIndex & 255u);
-			int minBuildingID = (ushort) (num6 * 192);
-			int maxBuildingID = (ushort) ((num6 + 1) * 192 - 1);
-			for(int i = 0; i < s_info.m_resilients.Count; i++)
+			int chunksize = Mathf.CeilToInt(1f*s_info.m_resilients.Count/UPDATE_EACH_TICKS);
+			int chunk = (int)Singleton<SimulationManager>.instance.m_currentFrameIndex%UPDATE_EACH_TICKS;
+			int start_i = chunk*chunksize;
+			int end_i = Mathf.Min(start_i+chunksize, s_info.m_resilients.Count);
+
+			for(int i = start_i; i < end_i; i++)
 			{
 				ushort buildingID = s_info.m_resilients[i].buildingID;
-
-				//sync with buildManager, update only buildings that just had a SimulationStep
-				if(buildingID < minBuildingID || buildingID >= maxBuildingID)
-					continue;
 
 				ResilientBuildings.ResilientInfoV1 build = s_info.m_resilients[i];
 
@@ -86,6 +74,7 @@ namespace ResilientOwners
 					{
 						s_info.m_resilients.RemoveAt(i);
 						i--;
+						end_i--;
 						continue;
 					}
 					s_info.m_resilients[i] = build;
@@ -125,6 +114,7 @@ namespace ResilientOwners
 					}
 				}
 
+
 				if(build.resiliencyActivated)
 				{
 					//instance.m_buildings.m_buffer[buildingID].m_electricityProblemTimer = 0;
@@ -132,15 +122,10 @@ namespace ResilientOwners
 					//instance.m_buildings.m_buffer[buildingID].m_problems = Notification.Problem.TurnedOff;
 
 					//building will not be removed when dezoning, it must be bulldozed
-					//instance.m_buildings.m_buffer[buildingID].m_flags &= ~Building.Flags.ZonesUpdated;
+					instance.m_buildings.m_buffer[buildingID].m_flags &= ~Building.Flags.ZonesUpdated;
 
 					//avoid major problem to trigger abandonment
 					instance.m_buildings.m_buffer[buildingID].m_majorProblemTimer = 0;
-					instance.m_buildings.m_buffer[buildingID].m_problems &= ~Notification.Problem.MajorProblem;
-
-					//lower cap on unhappiness if problems
-					if(instance.m_buildings.m_buffer[buildingID].m_problems != Notification.Problem.None)
-						instance.m_buildings.m_buffer[buildingID].m_happiness = 60;
 
 					//reoccupy building when it is abandoned/burned down
 					if((instance.m_buildings.m_buffer[buildingID].m_flags & (Building.Flags.Abandoned | Building.Flags.BurnedDown)) != Building.Flags.None)
@@ -182,7 +167,7 @@ namespace ResilientOwners
 						instance.m_buildings.m_buffer[buildingID].m_problems = Notification.Problem.None;
 					}
 
-					if(instance.m_buildings.m_buffer[buildingID].GetLastFrameData().m_fireDamage > 230) //extinguish fire at last minute
+					if(instance.m_buildings.m_buffer[buildingID].GetLastFrameData().m_fireDamage > 250) //extinguish fire at last minute
 					{
 						instance.m_buildings.m_buffer[buildingID].m_fireIntensity = 0;
 //						Building.Frame carpentry = instance.m_buildings.m_buffer[buildingID].GetLastFrameData();
@@ -191,6 +176,7 @@ namespace ResilientOwners
 
 					}
 				}
+
 
 				s_UI.CheckUpdateUI(buildingID);
 			}

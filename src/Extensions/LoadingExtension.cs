@@ -39,9 +39,9 @@ namespace ResilientOwners
 			if(extendedBuildingsInfo != null)
 				extensionTarget = (UIPanel) extendedBuildingsInfo.GetComponent("BuildingInfoWindow5");
 
-
 			//add mod's components to the UI
 			m_UI = ResilientUI.Install(m_infoObject, m_info, extensionTarget);
+
 
 			//bind objects
 			BookKeeper.s_info = m_info;
