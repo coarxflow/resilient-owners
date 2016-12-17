@@ -10,6 +10,7 @@
 using System;
 using System.Reflection;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using ColossalFramework;
 using ColossalFramework.Globalization;
@@ -47,7 +48,7 @@ namespace ResilientOwners
 		UILabel m_statsLabel;
 
 		UICurrencyWrapper income =  new UICurrencyWrapper(0L);
-		UIGoodsWrapper industryGoods =  new UIGoodsWrapper(0);
+		//UIGoodsWrapper industryGoods =  new UIGoodsWrapper(0);
 		UIGoodsWrapper industryGoods2 =  new UIGoodsWrapper(0);
 
 		ushort m_currentSelectedBuildingID;
@@ -101,7 +102,7 @@ namespace ResilientOwners
 			m_recordTitleLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_recordTitleLabel.name = "Record Title";
 			m_recordTitleLabel.textScale = 1.2f;
-			m_recordTitleLabel.text = "Record";
+			m_recordTitleLabel.text = Localization.trad.GetRecordTitle();
 			m_recordTitleLabel.textColor = m_bookTextColor;
 
 			m_descriptionTextField = m_bookInfoPanel.AddUIComponent<UIMultilineTextField> ();
@@ -126,9 +127,9 @@ namespace ResilientOwners
 			int spriteWidth = 32;
 			int spriteHeight = 32;
 			string[] tooltips = {
-				Mod.modName+": disabled", 
-				Mod.modName+": history is enabled",
-				Mod.modName+": history and resiliency enabled"
+				Localization.trad.GetTooltipOff(), 
+ 				Localization.trad.GetTooltipHistoryOn(),
+ 				Localization.trad.GetTooltipResiliencyOn()
 			};
 			m_resilientStateButton = new StatesButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, 3, "icons.book.png", "ResilientOwners", tooltips);
 
@@ -182,10 +183,13 @@ namespace ResilientOwners
 
 			m_statsLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_statsLabel.name = "Stats";
-			m_statsLabel.text = Localization.trad.GetAccumulatedIncome();
+			m_statsLabel.text = Localization.trad.GetEmptyHouse();//long enough string
 			m_statsLabel.textScale = 0.8f;
 			m_statsLabel.textColor = m_bookTextColor;
 			m_statsLabel.width = m_bookInfoPanelPageWidth;
+			m_statsLabel.wordWrap = true;
+ 			m_statsLabel.autoSize = false;
+ 			m_statsLabel.autoHeight = true;
 
 			placeComponents();
 
@@ -196,14 +200,28 @@ namespace ResilientOwners
 //					//m_info.StartCoroutine(OnSelected());//StartCoroutine on a MonoBehaviour...
 //			};
 
-			m_zonedBuildingInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
+			//m_zonedBuildingInfoPanel.m_IsEmbbeded = true;//one of the condition call to OnPositionChanged, ensure it
+  			m_zonedBuildingInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
 			{
 				if(m_zonedBuildingInfoPanel.component.isVisible)
 					OnSelected();
 			};
+			
+			m_zonedBuildingInfoPanel.component.eventOpacityChanged += (inst1, inst2) =>
+ 			{
+ 				if(m_zonedBuildingInfoPanel.component.isVisible)
+ 					OnSelected();
+ 			};
+
+            //m_zonedBuildingInfoPanel.component.eventClick += (inst1, inst2) =>
+            //{
+            //    if (m_zonedBuildingInfoPanel.component.isVisible)
+            //        OnSelected();
+            //};
 
 
-		}
+
+        }
 
 		/********** Event Handlers ***************/
 
@@ -269,9 +287,12 @@ namespace ResilientOwners
 
 			m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
 
+			if(m_extendedBuildingInfo != null)
+ 			{
+ 				StartCoroutine(updateWithExtendedBuildingsInfoPresent(buildIndex));
+ 			}
 
-
-			m_activatedDateLabel.text = m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y");
+			m_activatedDateLabel.text = Localization.trad.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y");
 
 			if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
 			{
@@ -374,9 +395,8 @@ namespace ResilientOwners
 				else
 					m_familiesHistoryLabel.text = m_info.GetWorkersHistoryList(buildIndex);
 
-				string txt = dateSpan(m_info.m_resilients [buildIndex].activatedDate, Singleton<SimulationManager>.instance.m_currentGameTime);
-				Debug.Log(txt);
-				m_ageLabel.text = txt;
+				m_ageLabel.text = dateSpan(m_info.m_resilients [buildIndex].activatedDate, Singleton<SimulationManager>.instance.m_currentGameTime);
+ 			
 	
 			}
 		}
@@ -388,19 +408,51 @@ namespace ResilientOwners
 
 		void referenceExtendedBuildingsInfoModUIelements()
 		{
-			UILabel[] labels = m_extendedBuildingInfo.gameObject.GetComponents<UILabel>();
-			CODebug.Log(LogChannel.Modding, "number of labels = "+labels.Length);
-			m_extendedBuildingInfoDescriptionLabel = labels[labels.Length-1];
-
-			m_extendedBuildingInfoDescriptionButton = m_extendedBuildingInfo.gameObject.GetComponent<UIButton>();
+			IList<UIComponent> comps = m_extendedBuildingInfo.components;
+ 			int labels = 0;
+ 			int buttons = 0;
+ 			for(int i = 0; i < comps.Count; i++)
+ 			{
+ 				if(comps[i].GetType().Equals(typeof(UILabel)))
+ 				{
+ 					labels++;
+ 					if(labels == 25)
+ 					{
+ 						m_extendedBuildingInfoDescriptionLabel = (UILabel)comps[i];
+ 					}
+ 				}
+ 				if(comps[i].GetType().Equals(typeof(UIButton)))
+ 				{
+ 					buttons++;
+ 					if(buttons == 1)
+ 					{
+ 						m_extendedBuildingInfoDescriptionButton = (UIButton)comps[i];
+ 					}
+ 				}
+ 			}
 		}
 
-		string takeDescriptionFromExtendedBuildingsInfo()
+		IEnumerator updateWithExtendedBuildingsInfoPresent(int buildIndex)
 		{
-			if (m_extendedBuildingInfoDescriptionButton == null)
-				return "";
-			return m_extendedBuildingInfoDescriptionLabel.text;
-		}
+			yield return null;
+  		m_extendedBuildingInfoDescriptionButton.isVisible = true;
+ 			yield return null;
+ 			if(!m_extendedBuildingInfoDescriptionLabel.isVisible)
+ 			{
+ 				m_extendedBuildingInfoDescriptionButton.SimulateClick();
+ 				m_extendedBuildingInfoDescriptionWasOn = false;
+ 			}
+ 			else
+ 			{
+ 				m_extendedBuildingInfoDescriptionWasOn = true;
+ 			}
+ 			yield return new WaitForSeconds(0.2f); //wait for text update
+ 			if(m_info.m_resilients [buildIndex].description.Length == 0)
+ 			{
+ 				m_descriptionTextField.text = m_extendedBuildingInfoDescriptionLabel.text;
+ 			}
+ 			m_extendedBuildingInfoDescriptionButton.SimulateClick();
+	}
 
 		void hideDescriptionExtendedBuildingsInfo()
 		{
@@ -409,13 +461,18 @@ namespace ResilientOwners
 			m_extendedBuildingInfoDescriptionLabel.isVisible = false;
 			m_extendedBuildingInfoDescriptionButton.isVisible = false;
 		}
-
+		
+		bool m_extendedBuildingInfoDescriptionWasOn = false;
 		void showDescriptionExtendedBuildingsInfo()
 		{
 			if (m_extendedBuildingInfoDescriptionButton == null)
 				return;
-			m_extendedBuildingInfoDescriptionLabel.isVisible = true;
-			m_extendedBuildingInfoDescriptionButton.isVisible = true;
+			//m_extendedBuildingInfoDescriptionLabel.isVisible = true;
+			if(m_extendedBuildingInfoDescriptionWasOn)
+			{
+ 				m_extendedBuildingInfoDescriptionButton.SimulateClick();
+ 				m_extendedBuildingInfoDescriptionWasOn = false;
+ 			}
 		}
 
 		string dateSpan(DateTime ancient, DateTime recent)

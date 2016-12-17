@@ -50,7 +50,7 @@ namespace ResilientOwners
 			ResilientExpresser.s_UI = m_UI;
 			IncomeTracker.s_info = m_info;
 
-			CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");
+			//CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");
 		}
 		
 		public override void OnLevelUnloading()

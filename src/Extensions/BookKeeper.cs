@@ -3,6 +3,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Collections.Generic;
 using ICities;
+using UnityEngine;
 
 namespace ResilientOwners
 {
@@ -32,11 +33,12 @@ namespace ResilientOwners
 			base.OnLoadData();
 
 			CODebug.Log (LogChannel.Modding, Mod.modName+" - try loading data");
-//			if (s_info == null) {
-//				s_info
-//			}
+            Debug.Log(Mod.modName + " - try loading data");
+            //			if (s_info == null) {
+            //				s_info
+            //			}
 
-			try {
+            try {
 				if (m_serializedData != null) {
 
 					byte[] data2 = m_serializedData.LoadData(RESILIENTS_VERSION_ID);
