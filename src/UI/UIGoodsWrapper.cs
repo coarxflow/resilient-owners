@@ -17,8 +17,9 @@ namespace ResilientOwners
 
 		public void Check(int newVal, ItemClass.SubService subService, bool extractor = false, bool litteral = true)
 		{
-			if (this.m_Value != newVal)
-			{
+            //CODebug.Log(LogChannel.Modding, Mod.modName + " - UIGoodsWrapper val " + newVal + " subService " + subService + " extractor " + extractor);
+   //         if (this.m_Value != newVal)
+			//{
 				this.m_Value = newVal;
 				switch(subService)
 				{
@@ -48,7 +49,7 @@ namespace ResilientOwners
 						break;
 				}
 			}
-		}
+		//}
 	}
 }
 

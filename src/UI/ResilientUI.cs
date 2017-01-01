@@ -11,10 +11,12 @@ using System;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
+
 
 namespace ResilientOwners
 {
@@ -38,7 +40,9 @@ namespace ResilientOwners
 		//Color32 m_bookTextColor = new Color32(199,131,50,255);
 		Color32 m_bookTextColor = Color.white;
 
-		UILabel m_historyTitleLabel;
+        BookPanel m_bookPanel;
+
+        UILabel m_historyTitleLabel;
 		UILabel m_recordTitleLabel;
 		UIMultilineTextField m_descriptionTextField;
 		StatesButton m_resilientStateButton;
@@ -81,17 +85,16 @@ namespace ResilientOwners
 
 		void AddComponents()
 		{
-			BookPanel bp = this.gameObject.AddComponent<BookPanel>();
-			bp.transform.parent = m_zonedBuildingInfoPanel.component.transform;
-			bp.size = new Vector3(m_zonedBuildingInfoPanel.component.size.x, m_zonedBuildingInfoPanel.component.size.y);
-			bp.position = new Vector3(-bp.size.x-m_bookInfoPanelLeftMargin, +bp.size.y);
-            //bp.position = new Vector3(-512, -512);
+			m_bookPanel = this.gameObject.AddComponent<BookPanel>();
+			m_bookPanel.transform.parent = m_zonedBuildingInfoPanel.component.transform;
+			m_bookPanel.size = new Vector3(m_zonedBuildingInfoPanel.component.size.x, m_zonedBuildingInfoPanel.component.size.y);//maybe excahnge line with prvious one?
+			m_bookPanel.position = new Vector3(-m_bookPanel.size.x-m_bookInfoPanelLeftMargin, +m_bookPanel.size.y);
 
-			m_bookInfoPanelInitialHeight = bp.height;
-			m_bookInfoPanelPageWidth = bp.size.x/2 - m_bookInfoPanelLeftMargin - m_bookInfoPanelRightPadding;
-			m_bookInfoPanelLeftMarginPage2 = bp.size.x/2 + m_bookInfoPanelLeftMargin;
+			m_bookInfoPanelInitialHeight = m_bookPanel.height;
+			m_bookInfoPanelPageWidth = m_bookPanel.size.x/2 - m_bookInfoPanelLeftMargin - m_bookInfoPanelRightPadding;
+			m_bookInfoPanelLeftMarginPage2 = m_bookPanel.size.x/2 + m_bookInfoPanelLeftMargin;
 
-			m_bookInfoPanel = bp;
+			m_bookInfoPanel = m_bookPanel;
 
 			m_historyTitleLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_historyTitleLabel.name = "History Title";
@@ -146,7 +149,8 @@ namespace ResilientOwners
 					break;
 				case 1:
 					m_info.AddBuilding(m_currentSelectedBuildingID, false);
-					ShowHistory();
+                    ShowHistory();
+                    CheckUpdateUI(m_currentSelectedBuildingID);
 					break;
 				case 2:
 					m_info.AddBuilding(m_currentSelectedBuildingID, true);
@@ -287,12 +291,17 @@ namespace ResilientOwners
 
 			m_descriptionTextField.text = m_info.m_resilients [buildIndex].description;
 
-			if(m_extendedBuildingInfo != null)
- 			{
- 				StartCoroutine(updateWithExtendedBuildingsInfoPresent(buildIndex));
- 			}
+            //if(m_extendedBuildingInfo != null)
+            //	{
+            //		StartCoroutine(updateWithExtendedBuildingsInfoPresent(buildIndex));
+            //	}
 
-			m_activatedDateLabel.text = Localization.trad.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y");
+            //fix panel going off-screen after free cam
+            m_bookPanel.position = new Vector3(-m_bookPanel.size.x - m_bookInfoPanelLeftMargin, +m_bookPanel.size.y); //fix panel going off-screen
+
+
+
+            m_activatedDateLabel.text = Localization.trad.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y");
 
 			if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
 			{
@@ -314,7 +323,8 @@ namespace ResilientOwners
 
 		void placeComponents()
 		{
-			m_historyTitleLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
+       
+            m_historyTitleLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopLeft);
 			m_historyTitleLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMargin, m_bookInfoPanelVerticalPadding, 0f);
 
 			m_recordTitleLabel.AlignTo(m_bookInfoPanel, UIAlignAnchor.TopRight);
@@ -357,12 +367,13 @@ namespace ResilientOwners
 		{
 			if(m_currentSelectedBuildingID != buildingID)
 				return;
+            String buildinfo2 = Singleton<BuildingManager>.instance.GetBuildingName(m_currentSelectedBuildingID, default(InstanceID));
+            //CODebug.Log(LogChannel.Modding, Mod.modName + " - CheckUpdateUI on building with id " + buildingID + " name  " + buildinfo2);
 
-			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
+            int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
 			if(buildIndex != -1)
 			{
-
-				BuildingInfo buildinfo = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info;
+                BuildingInfo buildinfo = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info;
 				switch(buildinfo.m_class.m_service)
 				{
 					case ItemClass.Service.Commercial:
@@ -386,11 +397,12 @@ namespace ResilientOwners
 						break;
 					case ItemClass.Service.Office:
 						income.Check(m_info.m_resilients [buildIndex].totalIncome);
-						m_statsLabel.text = Localization.trad.GetAccumulatedIncome() + income.result;
+                        //CODebug.Log(LogChannel.Modding, Mod.modName + " - CheckUpdateUI office total income "+ income.result);
+                        m_statsLabel.text = Localization.trad.GetAccumulatedIncome() + income.result;
 						break;
 				}
 
-				if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
+                if (Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
 					m_familiesHistoryLabel.text = m_info.GetFamiliesList(buildIndex);
 				else
 					m_familiesHistoryLabel.text = m_info.GetWorkersHistoryList(buildIndex);

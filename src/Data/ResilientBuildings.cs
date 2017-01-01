@@ -125,8 +125,11 @@ namespace ResilientOwners
 			ri.goodsBuffer1 = 0;
 			ri.goodsBuffer2 = 0;
 			ri.goodsBuffer3 = 0;
-			ri.goodsBuffer4 = 0;
+            //ri.goodsBuffer3 = build.m_customBuffer2;
+            ri.goodsBuffer4 = 0;
 
+            ri.totalIncome = 0L;
+            
 
 
 			//speed up abandonment
@@ -408,20 +411,26 @@ namespace ResilientOwners
 
 			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[ri.buildingID];
 
-			int cbn1 = (int) build.m_customBuffer1;
-			int cbn2 = (int) build.m_customBuffer2;
+			int cbn1 = (int) build.m_customBuffer1; //resources in stock
+			int cbn2 = (int) build.m_customBuffer2; //goods in stock
 
-			if(cbn1 > ri.goodsBuffer1) //material has been brought
+			if(cbn1 > ri.goodsBuffer1) //resources have been brought
 			{
-				ri.goodsBuffer2 -= ri.goodsBuffer1 - cbn1;
+				ri.goodsBuffer2 -= ri.goodsBuffer1 - cbn1; //total resources imported
 			}
 			ri.goodsBuffer1 = cbn1;
 
-			if(cbn2 < ri.goodsBuffer3) //goods have been picked up
-			{
-				ri.goodsBuffer4 += ri.goodsBuffer3 - cbn2;
-			}
-			ri.goodsBuffer3 = cbn2;
+            if (cbn2 < ri.goodsBuffer3) //goods have been picked up
+            {
+                ri.goodsBuffer4 += ri.goodsBuffer3 - cbn2;
+            }
+
+            //if (cbn2 > ri.goodsBuffer3) //goods have not been picked up (track production)
+            //{
+            //    ri.goodsBuffer4 += cbn2 - ri.goodsBuffer3;
+            //}
+
+            ri.goodsBuffer3 = cbn2;
 
 			m_resilients[buildIndex] = ri;
 		}

@@ -13,7 +13,12 @@ namespace ResilientOwners
 
 		public static ResilientBuildings s_info;
 
-		public override int OnAddResource (EconomyResource resource, int amount, Service service, SubService subService, Level level)
+        public override void OnCreated(IEconomy economy)
+        {
+            //CODebug.Log(LogChannel.Modding, Mod.modName + " - IncomeTracker started");
+        }
+
+        public override int OnAddResource (EconomyResource resource, int amount, Service service, SubService subService, Level level)
 		{
 
 			//check if OnAddResource call match what we are looking for
@@ -27,7 +32,9 @@ namespace ResilientOwners
 				return amount;
 			}
 
-			SimulationManager instance = Singleton<SimulationManager>.instance;
+            //CODebug.Log(LogChannel.Modding, Mod.modName + " - IncomeTracker search building with service " + service + " subservice " + subService + " level " + level + " amount "+amount);
+
+            SimulationManager instance = Singleton<SimulationManager>.instance;
 			BuildingManager instance2 = Singleton<BuildingManager>.instance;
 
 			//sync with simulation frame
@@ -194,14 +201,17 @@ namespace ResilientOwners
 					if(instance2.m_buildings.m_buffer[buildingID].Info.m_class.m_service == ItemClass.Service.Office)
 					{
 						int buildIndex = s_info.GetResilientBuildingIndex((ushort) buildingID);
-						if(buildIndex != -1)
+                    String buildinfo2 = Singleton<BuildingManager>.instance.GetBuildingName(buildingID, default(InstanceID));
+                    //CODebug.Log(LogChannel.Modding, Mod.modName + " - IncomeTracker found building with id " + buildingID + " buildIndex " + buildIndex + " " + buildinfo2);
+                        if (buildIndex != -1)
 						{
 							ResilientBuildings.ResilientInfoV1 ri = s_info.m_resilients[buildIndex];
 							ri.totalIncome += amount;
 							s_info.m_resilients[buildIndex] = ri;
 						}
 					}
-				}
+                buildingID++; //ensure search starts from next building at next function call
+            }
 				else
 				{
 					CODebug.Log(LogChannel.Modding, Mod.modName+" - IncomeTracker could not meet building with service "+service+" subservice "+subService+" level "+level);

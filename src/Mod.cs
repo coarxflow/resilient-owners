@@ -19,20 +19,20 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion ("0.0.1")]
+[assembly: AssemblyVersion ("1.0.1")]
 
 namespace ResilientOwners {
     public class Mod: IUserMod {
 
 		public static string modName = "Resilient Owners";
 		public static String modID = "ResilientOwners";
-		public static string version = "1.0.0";
+		public static string version = "1.0.1";
 
         public string Name {
 			get { return modName; }
         }
         public string Description {
-			get { return "ResilientOwners"; }
+			get { return "Adds history and make zoned buildings resilient."; }
         }
     }
 }

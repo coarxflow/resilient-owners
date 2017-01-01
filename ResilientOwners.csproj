@@ -78,12 +78,12 @@
     </Reference>
   </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>SET FileTarget="C:\Users\Loic\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\ResilientOwners.dll"
+    <PreBuildEvent>SET FileTarget="D:\SteamLibrary\steamapps\workshop\content\255710\820547325\ResilientOwners.dll"
 IF EXIST %25FileTarget%25 del /F %25FileTarget%25</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>SET FileSource="D:\Documents\mods\ResilientOwners\bin\Debug\ResilientOwners.dll"
-SET FileTarget="C:\Users\Loic\AppData\Local\Colossal Order\Cities_Skylines\Addons\Mods\ResilientOwners\ResilientOwners.dll"
+SET FileTarget="D:\SteamLibrary\steamapps\workshop\content\255710\820547325\ResilientOwners.dll"
 copy %25FileSource%25 %25FileTarget%25 /y</PostBuildEvent>
   </PropertyGroup>
 </Project>

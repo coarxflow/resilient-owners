@@ -1,0 +1,7 @@
+Version 1.0.1
+
+ * fixed produced amount displaying N/A when adding a new industrial building
+ * fixed bug preventing to correctly track office building revenue when many are present
+ * fixed book displaying off-screen after using free cam mode
+ * added a proper description to the mod
+ * book will display relevant info immediately when adding a new resilient building
