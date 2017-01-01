@@ -9,8 +9,9 @@ namespace ResilientOwners
 		GameObject m_infoObject;
 		ResilientBuildings m_info;
 		ResilientUI m_UI;
-		
-		public override void OnCreated(ILoading loading)
+        public static bool installed = false;
+
+        public override void OnCreated(ILoading loading)
 		{
 			base.OnCreated(loading);
 
@@ -50,8 +51,10 @@ namespace ResilientOwners
 			ResilientExpresser.s_UI = m_UI;
 			IncomeTracker.s_info = m_info;
 
-			//CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");
-		}
+            //CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");
+            installed = true;
+
+        }
 		
 		public override void OnLevelUnloading()
 		{
@@ -60,7 +63,10 @@ namespace ResilientOwners
 			
 			if(m_infoObject != null)
 				GameObject.Destroy(m_infoObject);
-		}
+
+            installed = false;
+
+        }
 		
 		public override void OnReleased()
 		{

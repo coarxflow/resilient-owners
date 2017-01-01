@@ -40,6 +40,9 @@ namespace ResilientOwners
 
 		public override void OnBeforeSimulationFrame()
 		{
+            if (!LoadingExtension.installed)
+                return;
+
 			BuildingManager instance = Singleton<BuildingManager>.instance;
 			for(int i = 0; i < s_info.m_resilients.Count; i++)
 			{
@@ -61,7 +64,10 @@ namespace ResilientOwners
 
 		public override void OnAfterSimulationFrame()
 		{
-			if(s_info == null)
+            if (!LoadingExtension.installed)
+                return;
+
+            if (s_info == null)
 				return;
 
 			BuildingManager instance = Singleton<BuildingManager>.instance;

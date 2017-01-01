@@ -117,7 +117,10 @@ namespace ResilientOwners
 		public override void OnSaveData() {
 		base.OnSaveData();
 
-			CODebug.Log (LogChannel.Modding, Mod.modName+" - try saving data");
+            if (!LoadingExtension.installed)
+                return;
+
+            CODebug.Log (LogChannel.Modding, Mod.modName+" - try saving data");
 			try {
 				if (m_serializedData != null) {
 					BinaryFormatter bFormatter2 = new BinaryFormatter();

@@ -21,8 +21,11 @@ namespace ResilientOwners
         public override int OnAddResource (EconomyResource resource, int amount, Service service, SubService subService, Level level)
 		{
 
-			//check if OnAddResource call match what we are looking for
-			if(!resource.Equals(EconomyResource.PrivateIncome)) //interedted in private incomes only
+            if (!LoadingExtension.installed)
+                return amount;
+
+            //check if OnAddResource call match what we are looking for
+            if (!resource.Equals(EconomyResource.PrivateIncome)) //interested in private incomes only
 			{
 				return amount;
 			}
