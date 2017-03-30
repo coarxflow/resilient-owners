@@ -66,6 +66,8 @@ namespace ResilientOwners
 		public abstract string GetTooltipResiliencyOn();
 
         //settings
+        public abstract string GetSettingsPerCities();
+
         public abstract string GetResidentsListingSetting();
 
         public abstract string GetExtinguishFiresSetting();

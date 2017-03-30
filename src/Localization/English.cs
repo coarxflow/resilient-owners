@@ -195,6 +195,11 @@ namespace ResilientOwners
         {
             return "Auto extinguish fires for resilient buildings";
         }
+
+        public override string GetSettingsPerCities()
+        {
+            return "Settings are saved per city.";
+        }
     }
 }
 

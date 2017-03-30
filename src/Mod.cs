@@ -21,14 +21,14 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion ("1.1.0")]
+[assembly: AssemblyVersion ("1.1.1")]
 
 namespace ResilientOwners {
     public class Mod: IUserMod {
 
 		public static string modName = English.modName;
 		public static String modID = "ResilientOwners";
-		public static string version = "1.1.0";
+		public static string version = "1.1.1";
 
         public string Name {
 			get
@@ -93,7 +93,9 @@ namespace ResilientOwners {
 
             extinguishFiresSetting = (UICheckBox)helper.AddCheckbox(Localization.trad.GetExtinguishFiresSetting(), Settings.inst.extinguishFires, toggleExtinguishFiresSetting);
 
-            helper.AddTextfield("Settings are saved per city.", "Settings are saved per city.", null);
+            helper.AddSpace(40);
+
+            helper.AddGroup(Localization.trad.GetSettingsPerCities());
 
         }
 

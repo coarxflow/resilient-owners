@@ -195,6 +195,11 @@ namespace ResilientOwners
         {
             return "Stopper automatiquement les incendies pour les bâtiments résilients";
         }
+
+        public override string GetSettingsPerCities()
+        {
+            return "Options sauvegardées séparément par ville.";
+        }
     }
 }
 
