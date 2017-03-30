@@ -39,6 +39,8 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="src\Data\Settings.cs" />
+    <Compile Include="src\Localization\Francais.cs" />
     <Compile Include="src\Mod.cs" />
     <Compile Include="src\Extensions\LevelUpExtension.cs" />
     <Compile Include="src\Extensions\LoadingExtension.cs" />

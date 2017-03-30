@@ -188,7 +188,7 @@ namespace ResilientOwners
 						instance.m_buildings.m_buffer[buildingID].m_problems = Notification.Problem.None;
 					}
 
-					if(instance.m_buildings.m_buffer[buildingID].GetLastFrameData().m_fireDamage > 230) //extinguish fire at last minute
+					if(instance.m_buildings.m_buffer[buildingID].GetLastFrameData().m_fireDamage > 230 && Settings.inst.extinguishFires) //extinguish fire at last minute
 					{
 						instance.m_buildings.m_buffer[buildingID].m_fireIntensity = 0;
 //						Building.Frame carpentry = instance.m_buildings.m_buffer[buildingID].GetLastFrameData();

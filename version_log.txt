@@ -5,3 +5,9 @@ Version 1.0.1
  * fixed book displaying off-screen after using free cam mode
  * added a proper description to the mod
  * book will display relevant info immediately when adding a new resilient building
+
+Version 1.1.0
+
+ * added option to not track resilient and workers history
+ * added option to not auto extinguish fires for resilient buildings
+ * introduced french traduction

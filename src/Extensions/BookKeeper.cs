@@ -11,15 +11,16 @@ namespace ResilientOwners
 	{
 		private const String RESILIENTS_DATA_ID = "ResilientOwnersMod";
 		private const String RESILIENTS_VERSION_ID = "ResilientOwnersModVersion";
+        private const String RESILIENTS_SETTINGS_ID = "ResilientOwnersModSettings";
 
-		private const int SAVE_DATA_VERSION = 1;
+        private const int SAVE_DATA_VERSION = 2;
 
-		ISerializableData m_serializedData;
+        ISerializableData m_serializedData;
 
 		public static ResilientBuildings s_info;
 		public static int s_savedDataVersion = 0;
 
-		public static List<ResilientBuildings.ResilientInfoV1> s_data;
+        public static List<ResilientBuildings.ResilientInfoV1> s_data;
 
 		public override void OnCreated(ISerializableData serializedData) {
 			base.OnCreated(serializedData);
@@ -33,7 +34,7 @@ namespace ResilientOwners
 			base.OnLoadData();
 
 			CODebug.Log (LogChannel.Modding, Mod.modName+" - try loading data");
-            Debug.Log(Mod.modName + " - try loading data");
+            
             //			if (s_info == null) {
             //				s_info
             //			}
@@ -65,6 +66,7 @@ namespace ResilientOwners
 								s_data = convertVersionZeroListToOne(legacyList);
 								break;
 							case 1:
+                            case 2:
 								s_data = (List<ResilientBuildings.ResilientInfoV1>)bFormatter.Deserialize(mStream);
 								break;
 							}
@@ -74,7 +76,27 @@ namespace ResilientOwners
 						} else {
 
 						}
-					}
+
+                        data = m_serializedData.LoadData(RESILIENTS_SETTINGS_ID);
+                        if (data != null)
+                        {
+                            BinaryFormatter bFormatter = new BinaryFormatter();
+                            MemoryStream mStream = new MemoryStream(data);
+                            switch (s_savedDataVersion)
+                            {
+                                case 2:
+                                    Settings.inst = (ResilientSettings) bFormatter.Deserialize(mStream);
+                                    break;
+                            }
+
+                            CODebug.Log(LogChannel.Modding, Mod.modName + " - successful loading settings");
+
+                        }
+                        else
+                        {
+
+                        }
+                    }
 					else {
 						CODebug.Error (LogChannel.Modding, Mod.modName+" - invalid saved data version");
 					}
@@ -135,10 +157,22 @@ namespace ResilientOwners
 					MemoryStream mStream       = new MemoryStream();
 					bFormatter.Serialize(mStream, s_info.m_resilients);
 					byte[] data = mStream.ToArray();
-					if (data != null) {
+
+                    if (data != null) {
 						m_serializedData.SaveData(RESILIENTS_DATA_ID, data);
 					}
-					CODebug.Log (LogChannel.Modding, Mod.modName+" - successful saving data");
+
+                    BinaryFormatter bFormatter3 = new BinaryFormatter();
+                    MemoryStream mStream3 = new MemoryStream();
+                    bFormatter3.Serialize(mStream3, Settings.inst);
+                    byte[] data3 = mStream3.ToArray();
+
+                    if (data3 != null)
+                    {
+                        m_serializedData.SaveData(RESILIENTS_SETTINGS_ID, data3);
+                    }
+
+                    CODebug.Log (LogChannel.Modding, Mod.modName+" - successful saving data");
 					
 				} else {
 

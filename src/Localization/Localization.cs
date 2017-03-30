@@ -1,12 +1,14 @@
-﻿using System;
+﻿using System.Globalization;
 
 namespace ResilientOwners
 {
 	public abstract class Localization
 	{
 		public static Localization trad;
-		
-		public abstract string GetHistoryTitle();
+
+        public static CultureInfo culture;
+
+        public abstract string GetHistoryTitle();
 
 		public abstract string GetRecordTitle();
 
@@ -63,6 +65,12 @@ namespace ResilientOwners
 
 		public abstract string GetTooltipResiliencyOn();
 
-	}
+        //settings
+        public abstract string GetResidentsListingSetting();
+
+        public abstract string GetExtinguishFiresSetting();
+
+
+    }
 }
 

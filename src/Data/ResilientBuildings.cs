@@ -73,9 +73,9 @@ namespace ResilientOwners
 
 		public List<ResilientInfoV1> m_resilients;
 
-		/*********** Manage List *************/
+        /*********** Manage List *************/
 
-		public void InitializeList()
+        public void InitializeList()
 		{
 			if (m_resilients == null) {
 				m_resilients = new List<ResilientInfoV1> ();
@@ -165,6 +165,9 @@ namespace ResilientOwners
 		//residential building history updates
 		public void UpdateResidentFamilies(int resilient_index)
 		{
+            if (!Settings.inst.listResidentsAndWorkers)
+                return;
+
 			List<uint> current_families_id = new List<uint>();
 
 			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_resilients[resilient_index].buildingID];
@@ -258,7 +261,10 @@ namespace ResilientOwners
 		//workers building history update
 		public void UpdateWorkers(int resilient_index)
 		{
-			List<uint> current_workers_ids = new List<uint>();
+            if (!Settings.inst.listResidentsAndWorkers)
+                return;
+
+            List<uint> current_workers_ids = new List<uint>();
 
 			Building build = Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_resilients[resilient_index].buildingID];
 			CitizenManager instance = Singleton<CitizenManager>.instance;
@@ -434,6 +440,16 @@ namespace ResilientOwners
 
 			m_resilients[buildIndex] = ri;
 		}
+
+        /********** clear lists (in settings) *********/
+
+        public void clearResidentsList()
+        {
+            for(int i = 0; i < m_resilients.Count; i++)
+            {
+                m_resilients[i].namesBuffer.Clear();
+            }
+        }
 
 	}
 }

@@ -4,7 +4,10 @@ namespace ResilientOwners
 {
 	public class English : Localization
 	{
-		public override string GetHistoryTitle()
+        public static string modName = "Resilient Owners";
+        public static string modDescription = "Adds history and make zoned buildings resilient.";
+
+        public override string GetHistoryTitle()
 		{
 			return "History";
 		}
@@ -180,6 +183,18 @@ namespace ResilientOwners
 		{
 			return Mod.modName+": history and resiliency enabled";
 		}
-	}
+
+        //settings
+
+        public override string GetResidentsListingSetting()
+        {
+            return "Track residents/workers history";
+        }
+
+        public override string GetExtinguishFiresSetting()
+        {
+            return "Auto extinguish fires for resilient buildings";
+        }
+    }
 }
 

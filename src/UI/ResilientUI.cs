@@ -301,7 +301,7 @@ namespace ResilientOwners
 
 
 
-            m_activatedDateLabel.text = Localization.trad.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y");
+            m_activatedDateLabel.text = Localization.trad.GetActivationDate() + m_info.m_resilients [buildIndex].activatedDate.Date.ToString("y", Localization.culture);
 
 			if(Singleton<BuildingManager>.instance.m_buildings.m_buffer[m_currentSelectedBuildingID].Info.m_class.m_service == ItemClass.Service.Residential)
 			{
@@ -316,7 +316,11 @@ namespace ResilientOwners
 				m_familiesHistoryLabel.relativePosition += new Vector3 (m_bookInfoPanelLeftMarginPage2, m_recordTitleLabel.height + m_ageLabel.height + m_statsLabel.height + 7*m_bookInfoPanelVerticalPadding, 0f);
 			}
 
-			m_bookInfoPanel.isVisible = true;
+
+            m_familiesHistoryLabel.isVisible = Settings.inst.listResidentsAndWorkers;
+
+
+            m_bookInfoPanel.isVisible = true;
 
 			m_descriptionTextField.AutoHeight();
 		}
