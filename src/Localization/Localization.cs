@@ -65,6 +65,10 @@ namespace ResilientOwners
 
 		public abstract string GetTooltipResiliencyOn();
 
+        public abstract string GetTooltipDistrictOff();
+
+        public abstract string GetTooltipDistrictOn();
+
         //settings
         public abstract string GetSettingsPerCities();
 

@@ -19,3 +19,9 @@ Version 1.1.0
 Version 1.1.1
 
  * fixed settings UI bug
+
+Version 1.2.0
+
+ * added button to district panel to enable/disable resiliency for all buildings in district
+ * made book panel to stay hidden if building panel is reopened after deactivating resiliency for the building
+ * shorter time to remove building data completely after resiliency/history was uncecked

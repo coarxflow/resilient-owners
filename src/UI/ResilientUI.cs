@@ -55,17 +55,23 @@ namespace ResilientOwners
 		//UIGoodsWrapper industryGoods =  new UIGoodsWrapper(0);
 		UIGoodsWrapper industryGoods2 =  new UIGoodsWrapper(0);
 
-		ushort m_currentSelectedBuildingID;
+        DistrictWorldInfoPanel m_districtInfoPanel;
+        StatesButton m_resilientStateButton2;
 
-		public static ResilientUI Install(GameObject resilientGO, ResilientBuildings info, UIPanel extendedBuildingInfo)
+        ushort m_currentSelectedBuildingID;
+        byte m_currentSelectedDistrictID;
+
+        public static ResilientUI Install(GameObject resilientGO, ResilientBuildings info, UIPanel extendedBuildingInfo)
 		{
 			ResilientUI rui = resilientGO.AddComponent<ResilientUI>();
 			//ResilientUI rui = new ResilientUI();
 			rui.m_info = info;
 
 			rui.m_zonedBuildingInfoPanel = GameObject.Find("(Library) ZonedBuildingWorldInfoPanel").GetComponent<ZonedBuildingWorldInfoPanel>();
+            rui.m_districtInfoPanel = GameObject.Find("(Library) DistrictWorldInfoPanel").GetComponent<DistrictWorldInfoPanel>();
 
-			if(extendedBuildingInfo != null)
+
+            if (extendedBuildingInfo != null)
 			{
 				rui.m_extendedBuildingInfo = extendedBuildingInfo;
 				//rui.referenceExtendedBuildingsInfoModUIelements();
@@ -223,6 +229,44 @@ namespace ResilientOwners
             //        OnSelected();
             //};
 
+            // district panel modifications
+
+            string[] tooltips2 = {
+                Localization.trad.GetTooltipDistrictOff(),
+                Localization.trad.GetTooltipDistrictOn()
+            };
+            m_resilientStateButton2 = new StatesButton(m_districtInfoPanel.component, spriteWidth, spriteHeight, 2, "icons.star.png", "ResilientOwnersDistricts", tooltips2);
+
+            m_resilientStateButton2.msb.eventActiveStateIndexChanged += (component, value) => {
+
+                if (!m_allowEvents)
+                    return;
+
+                switch (value)
+                {
+                    case 0:
+                        m_info.UnsuscribeDistrict(m_currentSelectedDistrictID);
+                        break;
+                    case 1:
+                        m_info.AddDistrict(m_currentSelectedDistrictID);
+                        break;
+                }
+            };
+            m_resilientStateButton2.msb.AlignTo(m_districtInfoPanel.component, UIAlignAnchor.TopRight);
+            m_resilientStateButton2.msb.relativePosition += new Vector3(-20f, 90f, 0f);
+
+            m_districtInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
+            {
+                if (m_districtInfoPanel.component.isVisible)
+                    OnSelectedDistricts();
+            };
+
+            m_districtInfoPanel.component.eventOpacityChanged += (inst1, inst2) =>
+            {
+                if (m_districtInfoPanel.component.isVisible)
+                    OnSelectedDistricts();
+            };
+
 
 
         }
@@ -258,24 +302,60 @@ namespace ResilientOwners
 				m_currentSelectedBuildingID = 0;
 			}
 
-			int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
-			m_allowEvents = false;
-			if (buildIndex != -1) {
-				if(m_info.m_resilients[buildIndex].resiliencyActivated)
-					m_resilientStateButton.SetState(2);
-				else
-					m_resilientStateButton.SetState(1);
-				ShowHistory();
-				CheckUpdateUI(m_currentSelectedBuildingID);
-			} else {
-				m_resilientStateButton.SetState(0);
-				HideHistory();
-			}
+            int buildIndex = m_info.GetResilientBuildingIndex (m_currentSelectedBuildingID);
+            m_allowEvents = false;
+            if (buildIndex != -1 && !m_info.m_resilients[buildIndex].unsuscribed) {
+                if(m_info.m_resilients[buildIndex].resiliencyActivated)
+                    m_resilientStateButton.SetState(2);
+                else
+                    m_resilientStateButton.SetState(1);
+                ShowHistory();
+                CheckUpdateUI(m_currentSelectedBuildingID);
+            } else {
+                m_resilientStateButton.SetState(0);
+                HideHistory();
+            }
 
-			m_allowEvents = true;
+            m_allowEvents = true;
 		}
 
-		public void HideHistory()
+        void OnSelectedDistricts()
+        {
+            //get selected building ID (after waiting it has been actualized)
+            FieldInfo baseSub = m_districtInfoPanel.GetType().GetField("m_InstanceID", BindingFlags.NonPublic | BindingFlags.Instance);
+            InstanceID instanceId = (InstanceID)baseSub.GetValue(m_districtInfoPanel);
+            if (instanceId.Type == InstanceType.District && instanceId.District != 0)
+            {
+                if (m_currentSelectedDistrictID == instanceId.District) //no update needed
+                    return;
+                m_currentSelectedDistrictID = instanceId.District;
+            }
+            else
+            {
+                m_currentSelectedDistrictID = 0;
+            }
+
+            int districtIndex = m_info.GetResilientDistrictIndex(m_currentSelectedDistrictID);
+
+            m_allowEvents = false;
+            if (districtIndex != -1)
+            {
+                if(m_info.m_districts[districtIndex].unsuscribed)
+                    m_resilientStateButton2.SetState(0);
+                else if (m_info.m_districts[districtIndex].resiliencyActivated)
+                    m_resilientStateButton2.SetState(1);
+                else
+                    m_resilientStateButton2.SetState(0);
+            }
+            else
+            {
+                m_resilientStateButton2.SetState(0);
+            }
+
+            m_allowEvents = true;
+        }
+
+        public void HideHistory()
 		{
 			m_bookInfoPanel.isVisible = false;
 			if(m_extendedBuildingInfo != null)

@@ -21,14 +21,14 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion ("1.1.1")]
+[assembly: AssemblyVersion ("1.2.0")]
 
 namespace ResilientOwners {
     public class Mod: IUserMod {
 
 		public static string modName = English.modName;
 		public static String modID = "ResilientOwners";
-		public static string version = "1.1.1";
+		public static string version = "1.2.0";
 
         public string Name {
 			get

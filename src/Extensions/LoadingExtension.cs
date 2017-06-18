@@ -31,6 +31,8 @@ namespace ResilientOwners
 			m_info = m_infoObject.AddComponent<ResilientBuildings>();
 			if(BookKeeper.s_data != null)
 				m_info.m_resilients = BookKeeper.s_data;
+            if (BookKeeper.s_districts != null)
+                m_info.m_districts = BookKeeper.s_districts;
 
             //localization
             if (Localization.trad == null)

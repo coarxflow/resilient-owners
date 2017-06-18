@@ -73,7 +73,26 @@ namespace ResilientOwners
 
 		public List<ResilientInfoV1> m_resilients;
 
-        /*********** Manage List *************/
+        [System.Serializable]
+        public struct ResilientDistrict
+        {
+            public byte districtID;
+
+            public DateTime activatedDate;
+
+            public bool resiliencyActivated;
+            
+            public string description;
+
+            public int totalBuildings;
+
+            public bool unsuscribed;
+            public int unsuscribeTimer;
+        }
+
+        public List<ResilientDistrict> m_districts;
+
+        /*********** Manage Building List *************/
 
         public void InitializeList()
 		{
@@ -83,7 +102,17 @@ namespace ResilientOwners
 			} else {
 				//CODebug.Log (LogChannel.Modding, "a resilient building list has benn loaded");
 			}
-		}
+
+            if (m_districts == null)
+            {
+                m_districts = new List<ResilientDistrict>();
+                //CODebug.Log (LogChannel.Modding, "initialize resilient building list");
+            }
+            else
+            {
+                //CODebug.Log (LogChannel.Modding, "a resilient building list has benn loaded");
+            }
+        }
 
 		public int GetResilientBuildingIndex(ushort buildingID)
 		{
@@ -96,7 +125,7 @@ namespace ResilientOwners
 			return -1;
 		}
 
-		public void AddBuilding(ushort buildingID, bool resilient) {
+		public bool AddBuilding(ushort buildingID, bool resilient) {
 			
 			ResilientInfoV1 ri;
 
@@ -110,7 +139,7 @@ namespace ResilientOwners
 				m_resilients[buildIndex] = ri;
 				Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_majorProblemTimer = 0;
 				Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_problems = Notification.RemoveProblems(Singleton<BuildingManager>.instance.m_buildings.m_buffer[buildingID].m_problems, Notification.Problem.MajorProblem);
-				return;
+				return false;
 			}
 
 			ri = new ResilientInfoV1();
@@ -139,6 +168,8 @@ namespace ResilientOwners
 			m_resilients.Add(ri);
 
 			UpdateResidentFamilies(m_resilients.Count-1);
+
+            return true;
 		}
 
 		public void UnsuscribeBuilding(ushort buildingID)
@@ -451,6 +482,64 @@ namespace ResilientOwners
             }
         }
 
-	}
+        /*********** Manage Districts List *************/
+
+        public int GetResilientDistrictIndex(byte districtID)
+        {
+            for (int i = 0; i < m_districts.Count; i++)
+            {
+                if (districtID == m_districts[i].districtID)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public void AddDistrict(byte districtID, bool resilient = true)
+        {
+
+            ResilientDistrict rd;
+
+            int buildIndex = GetResilientBuildingIndex(districtID);
+            if (buildIndex != -1)
+            {
+                rd = m_districts[buildIndex];
+                rd.unsuscribed = false;
+                rd.unsuscribeTimer = 0;
+                rd.resiliencyActivated = resilient;
+                m_districts[buildIndex] = rd;
+                return;
+            }
+        
+            rd = new ResilientDistrict();
+            rd.districtID = districtID;
+            rd.activatedDate = Singleton<SimulationManager>.instance.m_currentGameTime;
+            rd.description = "";
+            rd.resiliencyActivated = resilient;
+
+            m_districts.Add(rd);
+
+        }
+
+        public void UnsuscribeDistrict(byte districtID)
+        {
+            int index = GetResilientDistrictIndex(districtID);
+
+            if (index != -1)
+            {
+                ResilientDistrict ri = m_districts[index];
+                ri.unsuscribed = true;
+                m_districts[index] = ri;
+            }
+        }
+
+        public void RemoveDistrict(byte districtID)
+        {
+            int index = GetResilientDistrictIndex(districtID);
+
+            m_districts.RemoveAt(index);
+        }
+
+    }
 }
 

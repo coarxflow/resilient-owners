@@ -60,7 +60,7 @@ namespace ResilientOwners
 //		}
 
 		//public static int UPDATE_EACH_TICKS = 20;
-		public static int REMOVE_AFTER_UPDATES = 1000;
+		public static int REMOVE_AFTER_UPDATES = 50;
 
 		public override void OnAfterSimulationFrame()
 		{
@@ -73,8 +73,41 @@ namespace ResilientOwners
 			BuildingManager instance = Singleton<BuildingManager>.instance;
 
 			int num6 = (int)(Singleton<SimulationManager>.instance.m_currentFrameIndex & 255u);
-			int minBuildingID = (ushort) (num6 * 192);
-			int maxBuildingID = (ushort) ((num6 + 1) * 192 - 1);
+            ushort minBuildingID = (ushort) (num6 * 192);
+            ushort maxBuildingID = (ushort) ((num6 + 1) * 192 - 1);
+
+            //check if building should be added as part of a resilient district
+            DistrictManager instance2 = Singleton<DistrictManager>.instance;
+            for(ushort i = minBuildingID; i < maxBuildingID; i++)
+            {
+                if (instance.m_buildings.m_buffer[i].m_flags == Building.Flags.None)
+                    continue;
+                Building build = instance.m_buildings.m_buffer[i];
+                byte districtID = instance2.GetDistrict(build.m_position);
+                int districtIndex = s_info.GetResilientDistrictIndex(districtID);
+                if (districtIndex != -1)
+                {
+                    if (s_info.m_districts[districtIndex].unsuscribed)
+                    {
+                        //s_info.RemoveBuilding(i);
+                        s_info.UnsuscribeBuilding(i);
+                    }
+                    else if (s_info.m_districts[districtIndex].resiliencyActivated)
+                    {
+                        bool newly_added = s_info.AddBuilding(i, true);
+                        if (newly_added)
+                        {
+                            ResilientBuildings.ResilientDistrict rd = s_info.m_districts[districtIndex];
+                            rd.totalBuildings++;
+                            s_info.m_districts[districtIndex] = rd;
+                        }
+                    }
+                }
+
+            }
+
+
+            //check all buildings in resilients list
 			for(int i = 0; i < s_info.m_resilients.Count; i++)
 			{
 				ushort buildingID = s_info.m_resilients[i].buildingID;

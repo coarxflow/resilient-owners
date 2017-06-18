@@ -56,8 +56,8 @@
     <Compile Include="src\Localization\English.cs" />
     <Compile Include="src\Localization\Localization.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <EmbeddedResource Include="icons\star.png" />
     <EmbeddedResource Include="icons\book.png" />
     <EmbeddedResource Include="icons\book_bckgrnd.png" />
   </ItemGroup>

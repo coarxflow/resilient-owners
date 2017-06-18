@@ -184,6 +184,16 @@ namespace ResilientOwners
 			return Mod.modName+": histoire et résilience activées";
 		}
 
+        public override string GetTooltipDistrictOff()
+        {
+            return Mod.modName + ": cliquez pour rendre tous les bâtiments du district résilients";
+        }
+
+        public override string GetTooltipDistrictOn()
+        {
+            return Mod.modName + ": cliquez pour désactiver l'histoire ou la résilience de tous les bâtiments du district";
+        }
+
         //settings
 
         public override string GetResidentsListingSetting()

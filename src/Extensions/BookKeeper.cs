@@ -10,10 +10,11 @@ namespace ResilientOwners
 	public class BookKeeper : SerializableDataExtensionBase
 	{
 		private const String RESILIENTS_DATA_ID = "ResilientOwnersMod";
-		private const String RESILIENTS_VERSION_ID = "ResilientOwnersModVersion";
+        private const String RESILIENTS_DISTRICTS_ID = "ResilientOwnersModDistricts";
+        private const String RESILIENTS_VERSION_ID = "ResilientOwnersModVersion";
         private const String RESILIENTS_SETTINGS_ID = "ResilientOwnersModSettings";
 
-        private const int SAVE_DATA_VERSION = 2;
+        private const int SAVE_DATA_VERSION = 3;
 
         ISerializableData m_serializedData;
 
@@ -21,8 +22,9 @@ namespace ResilientOwners
 		public static int s_savedDataVersion = 0;
 
         public static List<ResilientBuildings.ResilientInfoV1> s_data;
+        public static List<ResilientBuildings.ResilientDistrict> s_districts;
 
-		public override void OnCreated(ISerializableData serializedData) {
+        public override void OnCreated(ISerializableData serializedData) {
 			base.OnCreated(serializedData);
 			m_serializedData = serializedData;
 		}
@@ -67,15 +69,36 @@ namespace ResilientOwners
 								break;
 							case 1:
                             case 2:
-								s_data = (List<ResilientBuildings.ResilientInfoV1>)bFormatter.Deserialize(mStream);
+                            case 3:
+                                s_data = (List<ResilientBuildings.ResilientInfoV1>)bFormatter.Deserialize(mStream);
 								break;
 							}
 
-							CODebug.Log (LogChannel.Modding, Mod.modName+" - successful loading data");
+							CODebug.Log (LogChannel.Modding, Mod.modName+" - successful loading buildings data");
 							
 						} else {
 
 						}
+
+                        data = m_serializedData.LoadData(RESILIENTS_DISTRICTS_ID);
+                        if (data != null)
+                        {
+                            BinaryFormatter bFormatter = new BinaryFormatter();
+                            MemoryStream mStream = new MemoryStream(data);
+                            switch (s_savedDataVersion)
+                            {
+                                case 3:
+                                    s_districts = (List<ResilientBuildings.ResilientDistrict>)bFormatter.Deserialize(mStream);
+                                    break;
+                            }
+
+                            CODebug.Log(LogChannel.Modding, Mod.modName + " - successful loading districts data");
+
+                        }
+                        else
+                        {
+
+                        }
 
                         data = m_serializedData.LoadData(RESILIENTS_SETTINGS_ID);
                         if (data != null)
@@ -85,6 +108,7 @@ namespace ResilientOwners
                             switch (s_savedDataVersion)
                             {
                                 case 2:
+                                case 3:
                                     Settings.inst = (ResilientSettings) bFormatter.Deserialize(mStream);
                                     break;
                             }
@@ -157,10 +181,18 @@ namespace ResilientOwners
 					MemoryStream mStream       = new MemoryStream();
 					bFormatter.Serialize(mStream, s_info.m_resilients);
 					byte[] data = mStream.ToArray();
-
                     if (data != null) {
 						m_serializedData.SaveData(RESILIENTS_DATA_ID, data);
 					}
+
+                    BinaryFormatter bFormatter4 = new BinaryFormatter();
+                    MemoryStream mStream4 = new MemoryStream();
+                    bFormatter4.Serialize(mStream4, s_info.m_districts);
+                    byte[] data4 = mStream4.ToArray();
+                    if (data4 != null)
+                    {
+                        m_serializedData.SaveData(RESILIENTS_DISTRICTS_ID, data4);
+                    }
 
                     BinaryFormatter bFormatter3 = new BinaryFormatter();
                     MemoryStream mStream3 = new MemoryStream();
