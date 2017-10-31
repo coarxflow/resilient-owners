@@ -165,7 +165,7 @@ namespace ResilientOwners
 				}
 			};
 			m_resilientStateButton.msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
-			m_resilientStateButton.msb.relativePosition += new Vector3 (-50f, 90f, 0f);
+			m_resilientStateButton.msb.relativePosition += new Vector3 (-50f, 60f, 0f);
 
 			m_familiesHistoryLabel = m_bookInfoPanel.AddUIComponent<UILabel> ();
 			m_familiesHistoryLabel.name = "Families History";

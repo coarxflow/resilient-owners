@@ -61,8 +61,9 @@ namespace ResilientOwners
 
 		//public static int UPDATE_EACH_TICKS = 20;
 		public static int REMOVE_AFTER_UPDATES = 50;
+        public static int REMOVE_DISTRICT_AFTER_UPDATES = 255;
 
-		public override void OnAfterSimulationFrame()
+        public override void OnAfterSimulationFrame()
 		{
             if (!LoadingExtension.installed)
                 return;
@@ -106,9 +107,24 @@ namespace ResilientOwners
 
             }
 
+            //districts timers
+            for(int i = 0; i < s_info.m_districts.Count; i++)
+            {
+                if(s_info.m_districts[i].unsuscribed)
+                {
+                    ResilientBuildings.ResilientDistrict rd = s_info.m_districts[i];
+                    rd.unsuscribeTimer++;
+                    s_info.m_districts[i] = rd;
+                    if(rd.unsuscribeTimer > REMOVE_DISTRICT_AFTER_UPDATES)
+                    {
+                        s_info.RemoveDistrict(rd.districtID);
+                    }
+                }
+            }
+
 
             //check all buildings in resilients list
-			for(int i = 0; i < s_info.m_resilients.Count; i++)
+			for (int i = 0; i < s_info.m_resilients.Count; i++)
 			{
 				ushort buildingID = s_info.m_resilients[i].buildingID;
 
@@ -134,7 +150,8 @@ namespace ResilientOwners
 				if(instance.m_buildings.m_buffer[buildingID].m_flags == Building.Flags.None) //building was bulldozed, remove it from the list
 				{
 					s_info.m_resilients.RemoveAt(i);
-					continue;
+                    i--;
+                    continue;
 				}
 
 

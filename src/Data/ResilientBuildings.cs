@@ -132,6 +132,7 @@ namespace ResilientOwners
 			int buildIndex = GetResilientBuildingIndex(buildingID);
 			if(buildIndex != -1)
 			{
+                
 				ri = m_resilients[buildIndex];
 				ri.unsuscribed = false;
 				ri.unsuscribeTimer = 0;
@@ -500,7 +501,7 @@ namespace ResilientOwners
 
             ResilientDistrict rd;
 
-            int buildIndex = GetResilientBuildingIndex(districtID);
+            int buildIndex = GetResilientDistrictIndex(districtID);
             if (buildIndex != -1)
             {
                 rd = m_districts[buildIndex];
@@ -529,6 +530,7 @@ namespace ResilientOwners
             {
                 ResilientDistrict ri = m_districts[index];
                 ri.unsuscribed = true;
+                ri.resiliencyActivated = false;
                 m_districts[index] = ri;
             }
         }

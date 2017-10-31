@@ -24,4 +24,13 @@ Version 1.2.0
 
  * added button to district panel to enable/disable resiliency for all buildings in district
  * made book panel to stay hidden if building panel is reopened after deactivating resiliency for the building
- * shorter time to remove building data completely after resiliency/history was uncecked
+ * shorter time to remove building data completely after resiliency/history was unchecked
+
+Version 1.2.1
+
+ * fixed district resiliency impossible to enable after disabling it previously
+ * disabled resilient district will now be cleared from memory after some time
+
+Version 1.2.2
+
+ * fixed not being able to mark buildings as resilients
