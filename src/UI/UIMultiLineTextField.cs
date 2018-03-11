@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	[UIComponentMenu("Multiline Text Field"), ExecuteInEditMode]
 	public class UIMultilineTextField : UIInteractiveComponent

@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	public abstract class Localization
 	{

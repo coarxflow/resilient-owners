@@ -1,10 +1,10 @@
-namespace ResilientOwners
+namespace HistoricBuildings
 {
     [System.Serializable]
     public struct ResilientSettings
     {
-        public bool listResidentsAndWorkers;
         public bool extinguishFires;
+        public bool noAbandonment;
     }
 
     public class Settings
@@ -15,7 +15,7 @@ namespace ResilientOwners
         {
             inst = new ResilientSettings();
 
-            inst.listResidentsAndWorkers = true;
+            inst.noAbandonment = true;
             inst.extinguishFires = true;
         }
     }

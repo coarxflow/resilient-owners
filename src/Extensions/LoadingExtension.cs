@@ -2,13 +2,13 @@ using ICities;
 using UnityEngine;
 using ColossalFramework.UI;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	public class LoadingExtension : LoadingExtensionBase
 	{
 		GameObject m_infoObject;
-		ResilientBuildings m_info;
-		ResilientUI m_UI;
+		HistoricBuildings m_info;
+		HistoricUI m_UI;
         public static bool installed = false;
 
         public override void OnCreated(ILoading loading)
@@ -24,15 +24,15 @@ namespace ResilientOwners
 			if (mode != LoadMode.LoadGame && mode != LoadMode.NewGame)
                 return;
 
-            Mod.updateSettingsPanel(); //update settings after loading city
+            //Mod.updateSettingsPanel(); //update settings after loading city
 
             //create data object
-            m_infoObject = new GameObject("ResilientBuildings");
-			m_info = m_infoObject.AddComponent<ResilientBuildings>();
-			if(BookKeeper.s_data != null)
-				m_info.m_resilients = BookKeeper.s_data;
+            m_infoObject = new GameObject(Mod.modName);
+			m_info = m_infoObject.AddComponent<HistoricBuildings>();
+			if(BookKeeper.s_buildings != null)
+				m_info.buildings = BookKeeper.s_buildings;
             if (BookKeeper.s_districts != null)
-                m_info.m_districts = BookKeeper.s_districts;
+                m_info.districts = BookKeeper.s_districts;
 
             //localization
             if (Localization.trad == null)
@@ -47,15 +47,14 @@ namespace ResilientOwners
 				extensionTarget = (UIPanel) extendedBuildingsInfo.GetComponent("BuildingInfoWindow5");
 
 			//add mod's components to the UI
-			m_UI = ResilientUI.Install(m_infoObject, m_info, extensionTarget);
+			m_UI = HistoricUI.Install(m_infoObject, m_info, extensionTarget);
 
 
 			//bind objects
 			BookKeeper.s_info = m_info;
 			LevelUpExtension.s_info = m_info;
-			ResilientExpresser.s_info = m_info;
-			ResilientExpresser.s_UI = m_UI;
-			IncomeTracker.s_info = m_info;
+			HistoricExpresser.s_info = m_info;
+			HistoricExpresser.s_UI = m_UI;
             Mod.s_info = m_info;
 
             //CODebug.Log (LogChannel.Modding, "Resilient Owners mod launched");
@@ -66,7 +65,7 @@ namespace ResilientOwners
 		public override void OnLevelUnloading()
 		{
 			if(m_UI != null)
-				ResilientUI.Uninstall(m_UI);
+				HistoricUI.Uninstall(m_UI);
 			
 			if(m_infoObject != null)
 				GameObject.Destroy(m_infoObject);

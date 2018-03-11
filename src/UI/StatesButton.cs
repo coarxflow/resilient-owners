@@ -4,7 +4,7 @@ using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	public class StatesButton
 	{

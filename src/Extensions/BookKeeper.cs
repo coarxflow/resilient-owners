@@ -5,24 +5,27 @@ using System.Collections.Generic;
 using ICities;
 using UnityEngine;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	public class BookKeeper : SerializableDataExtensionBase
 	{
-		private const String RESILIENTS_DATA_ID = "ResilientOwnersMod";
+		private const String HISTORICS_DATA_ID = "HistoricBuildingsMod";
+        private const String HISTORICS_DISTRICTS_ID = "HistoricBuildingsModDistricts";
+        private const String HISTORICS_VERSION_ID = "HistoricBuildingsModVersion";
+        private const String HISTORICS_SETTINGS_ID = "HistoricBuildingsModSettings";
+
         private const String RESILIENTS_DISTRICTS_ID = "ResilientOwnersModDistricts";
         private const String RESILIENTS_VERSION_ID = "ResilientOwnersModVersion";
-        private const String RESILIENTS_SETTINGS_ID = "ResilientOwnersModSettings";
 
-        private const int SAVE_DATA_VERSION = 3;
+        private const int SAVE_DATA_VERSION = 1;
 
         ISerializableData m_serializedData;
 
-		public static ResilientBuildings s_info;
+		public static HistoricBuildings s_info;
 		public static int s_savedDataVersion = 0;
 
-        public static List<ResilientBuildings.ResilientInfoV1> s_data;
-        public static List<ResilientBuildings.ResilientDistrict> s_districts;
+        public static Dictionary<ushort, ItemClass.Level> s_buildings;
+        public static Dictionary<byte, ushort> s_districts;
 
         public override void OnCreated(ISerializableData serializedData) {
 			base.OnCreated(serializedData);
@@ -44,7 +47,7 @@ namespace ResilientOwners
             try {
 				if (m_serializedData != null) {
 
-					byte[] data2 = m_serializedData.LoadData(RESILIENTS_VERSION_ID);
+					byte[] data2 = m_serializedData.LoadData(HISTORICS_VERSION_ID);
 					if (data2 != null) {
 						BinaryFormatter bFormatter = new BinaryFormatter();
 						MemoryStream mStream       = new MemoryStream(data2);
@@ -53,54 +56,36 @@ namespace ResilientOwners
 
 					} else {
 						//save had no data
+
+                        //attempt recover data from ResilientOwners districts
 					}
 
 					if(s_savedDataVersion >= 0 && s_savedDataVersion <= SAVE_DATA_VERSION)
 					{
-						byte[] data = m_serializedData.LoadData(RESILIENTS_DATA_ID);
+						byte[] data = m_serializedData.LoadData(HISTORICS_DATA_ID);
 						if (data != null) {
 							BinaryFormatter bFormatter = new BinaryFormatter();
 							MemoryStream mStream       = new MemoryStream(data);
-							switch(s_savedDataVersion)
-							{
-							case 0:
-								List<ResilientBuildings.ResilientInfo> legacyList = (List<ResilientBuildings.ResilientInfo>)bFormatter.Deserialize(mStream);
-								s_data = convertVersionZeroListToOne(legacyList);
-								break;
-							case 1:
-                            case 2:
-                            case 3:
-                                s_data = (List<ResilientBuildings.ResilientInfoV1>)bFormatter.Deserialize(mStream);
-								break;
-							}
-
-							CODebug.Log (LogChannel.Modding, Mod.modName+" - successful loading buildings data");
-							
+                            s_buildings = (Dictionary<ushort,ItemClass.Level>)bFormatter.Deserialize(mStream);
+                            CODebug.Log (LogChannel.Modding, Mod.modName+" - successful loading buildings data");
 						} else {
 
 						}
 
-                        data = m_serializedData.LoadData(RESILIENTS_DISTRICTS_ID);
+                        data = m_serializedData.LoadData(HISTORICS_DISTRICTS_ID);
                         if (data != null)
                         {
                             BinaryFormatter bFormatter = new BinaryFormatter();
                             MemoryStream mStream = new MemoryStream(data);
-                            switch (s_savedDataVersion)
-                            {
-                                case 3:
-                                    s_districts = (List<ResilientBuildings.ResilientDistrict>)bFormatter.Deserialize(mStream);
-                                    break;
-                            }
-
+                            s_districts = (Dictionary<byte, ushort>)bFormatter.Deserialize(mStream);
                             CODebug.Log(LogChannel.Modding, Mod.modName + " - successful loading districts data");
-
                         }
                         else
                         {
 
                         }
 
-                        data = m_serializedData.LoadData(RESILIENTS_SETTINGS_ID);
+                        data = m_serializedData.LoadData(HISTORICS_SETTINGS_ID);
                         if (data != null)
                         {
                             BinaryFormatter bFormatter = new BinaryFormatter();
@@ -130,34 +115,11 @@ namespace ResilientOwners
 			} catch (Exception e) {
 				CODebug.Log (LogChannel.Modding, Mod.modName+" - Error loading data "+e.Message);
 			}
-		}
 
-		public List<ResilientBuildings.ResilientInfoV1> convertVersionZeroListToOne(List<ResilientBuildings.ResilientInfo> list)
-		{
-			CODebug.Log (LogChannel.Modding, Mod.modName+" - Converting save data from version 0 to 1");
-			List<ResilientBuildings.ResilientInfoV1> newList = new List<ResilientBuildings.ResilientInfoV1>();
-			for(int i=0;i<list.Count;i++)
-			{
-				ResilientBuildings.ResilientInfo ri0 = list[i];
-				ResilientBuildings.ResilientInfoV1 ri1 = new ResilientBuildings.ResilientInfoV1();
-				ri1.activatedDate = ri0.activatedDate;
-				ri1.buildingID = ri0.buildingID;
-				ri1.chosenLevel = ri0.chosenLevel;
-				ri1.currentVisits = ri0.currentVisits;
-				ri1.description = ri0.description;
-				ri1.goodsBuffer1 = ri0.goodsBuffer1;
-				ri1.goodsBuffer2 = ri0.goodsBuffer2;
-				ri1.goodsBuffer3 = ri0.goodsBuffer3;
-				ri1.goodsBuffer4 = ri0.goodsBuffer4;
-				ri1.resiliencyActivated = ri0.resiliencyActivated;
-				ri1.totalIncome = ri0.totalIncome;
-				ri1.totalVisits = ri0.totalVisits;
-				ri1.unsuscribed = ri0.unsuscribed;
-				ri1.unsuscribeTimer = ri0.unsuscribeTimer;
-				ri1.namesBuffer = new List<string>();
-				newList.Add(ri1);
-			}
-			return newList;
+            if(s_districts == null)
+            {
+
+            }
 		}
 
 		public override void OnSaveData() {
@@ -174,24 +136,24 @@ namespace ResilientOwners
 					bFormatter2.Serialize(mStream2, SAVE_DATA_VERSION);
 					byte[] data2 = mStream2.ToArray();
 					if (data2 != null) {
-						m_serializedData.SaveData(RESILIENTS_VERSION_ID, data2);
+						m_serializedData.SaveData(HISTORICS_VERSION_ID, data2);
 					}
 					
 					BinaryFormatter bFormatter = new BinaryFormatter();
 					MemoryStream mStream       = new MemoryStream();
-					bFormatter.Serialize(mStream, s_info.m_resilients);
+					bFormatter.Serialize(mStream, s_info.buildings);
 					byte[] data = mStream.ToArray();
                     if (data != null) {
-						m_serializedData.SaveData(RESILIENTS_DATA_ID, data);
+						m_serializedData.SaveData(HISTORICS_DATA_ID, data);
 					}
 
                     BinaryFormatter bFormatter4 = new BinaryFormatter();
                     MemoryStream mStream4 = new MemoryStream();
-                    bFormatter4.Serialize(mStream4, s_info.m_districts);
+                    bFormatter4.Serialize(mStream4, s_info.districts);
                     byte[] data4 = mStream4.ToArray();
                     if (data4 != null)
                     {
-                        m_serializedData.SaveData(RESILIENTS_DISTRICTS_ID, data4);
+                        m_serializedData.SaveData(HISTORICS_DISTRICTS_ID, data4);
                     }
 
                     BinaryFormatter bFormatter3 = new BinaryFormatter();
@@ -201,7 +163,7 @@ namespace ResilientOwners
 
                     if (data3 != null)
                     {
-                        m_serializedData.SaveData(RESILIENTS_SETTINGS_ID, data3);
+                        m_serializedData.SaveData(HISTORICS_SETTINGS_ID, data3);
                     }
 
                     CODebug.Log (LogChannel.Modding, Mod.modName+" - successful saving data");

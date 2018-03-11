@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	public class Francais : Localization
 	{
-        public static string modName = "Proprios résilients";
+        public static string modName = "Bâtiments historiques";
         public static string modDescription = "Ajoute un historique aux bâtiments de zone et les rend résilients.";
 
         public override string GetHistoryTitle()

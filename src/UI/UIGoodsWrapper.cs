@@ -2,7 +2,7 @@
 using UnityEngine;
 using ColossalFramework.Globalization;
 
-namespace ResilientOwners
+namespace HistoricBuildings
 {
 	public class UIGoodsWrapper : UIWrapper<int>
 	{

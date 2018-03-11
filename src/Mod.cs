@@ -8,11 +8,11 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle ("ResilientOwners")]
+[assembly: AssemblyTitle ("HistoricBuildings")]
 [assembly: AssemblyDescription ("")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
-[assembly: AssemblyProduct ("ResilientOwners")]
+[assembly: AssemblyProduct ("HistoricBuildings")]
 [assembly: AssemblyCopyright ("CoarxFlow")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
@@ -23,12 +23,12 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyVersion ("1.2.2")]
 
-namespace ResilientOwners {
+namespace HistoricBuildings {
     public class Mod: IUserMod {
 
 		public static string modName = English.modName;
-		public static String modID = "ResilientOwners";
-		public static string version = "1.2.2";
+		public static String modID = "HistoricBuildings";
+		public static string version = "1.0.0";
 
         public string Name {
 			get
@@ -73,7 +73,7 @@ namespace ResilientOwners {
             }
         }
 
-        public static ResilientBuildings s_info;
+        public static HistoricBuildings s_info;
 
         static UICheckBox listResidentsSetting;
         static UICheckBox extinguishFiresSetting;
@@ -87,7 +87,7 @@ namespace ResilientOwners {
             //per city settings
             Settings.defaultSettings();
 
-            listResidentsSetting = (UICheckBox) helper.AddCheckbox(Localization.trad.GetResidentsListingSetting(), Settings.inst.listResidentsAndWorkers, toggleResidentsListingSetting);
+            /*listResidentsSetting = (UICheckBox) helper.AddCheckbox(Localization.trad.GetResidentsListingSetting(), Settings.inst.listResidentsAndWorkers, toggleResidentsListingSetting);
 
             helper.AddSpace(20);
 
@@ -95,17 +95,10 @@ namespace ResilientOwners {
 
             helper.AddSpace(40);
 
-            helper.AddGroup(Localization.trad.GetSettingsPerCities());
+            helper.AddGroup(Localization.trad.GetSettingsPerCities());*/
 
         }
 
-        public void toggleResidentsListingSetting(bool toggle)
-        {
-            Settings.inst.listResidentsAndWorkers = toggle;
-
-            if (toggle && s_info != null)
-                s_info.clearResidentsList();
-        }
 
         public void toggleExtinguishFiresSetting(bool toggle)
         {
@@ -114,7 +107,6 @@ namespace ResilientOwners {
 
         public static void updateSettingsPanel()
         {
-            listResidentsSetting.isChecked = Settings.inst.listResidentsAndWorkers;
             extinguishFiresSetting.isChecked = Settings.inst.extinguishFires;
         }
     }

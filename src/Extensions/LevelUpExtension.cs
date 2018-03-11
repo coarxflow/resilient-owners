@@ -4,10 +4,10 @@ using ICities;
 using System;
 using UnityEngine;
 
-namespace ResilientOwners {
+namespace HistoricBuildings {
     public class LevelUpExtension : LevelUpExtensionBase {
         
-		public static ResilientBuildings s_info;
+		public static HistoricBuildings s_info;
 
         public override void OnCreated(ILevelUp levelUp) {
             
@@ -38,10 +38,8 @@ namespace ResilientOwners {
         }
 
         private Level controlLevelUp(Level targetLevel, Level currentLevel, ushort buildingID) {
-			int bi = s_info.GetResilientBuildingIndex (buildingID);
-
-			if (bi != -1) {//lock level
-				targetLevel = (Level) s_info.m_resilients[bi].chosenLevel;
+			if (s_info.buildings.ContainsKey(buildingID)) {//lock level
+				targetLevel = (Level) s_info.buildings[buildingID]; //use dictionnary instead!!
 			}
             return targetLevel;
         }
