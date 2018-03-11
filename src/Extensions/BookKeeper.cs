@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using ICities;
 using UnityEngine;
+using System.Linq;
 
 namespace HistoricBuildings
 {
@@ -27,6 +28,24 @@ namespace HistoricBuildings
         public static Dictionary<ushort, ItemClass.Level> s_buildings;
         public static Dictionary<byte, ushort> s_districts;
 
+        // Legacy from ResilientOwners
+        [System.Serializable]
+        public struct ResilientDistrict
+        {
+            public byte districtID;
+
+            public DateTime activatedDate;
+
+            public bool resiliencyActivated;
+
+            public string description;
+
+            public int totalBuildings;
+
+            public bool unsuscribed;
+            public int unsuscribeTimer;
+        }
+
         public override void OnCreated(ISerializableData serializedData) {
 			base.OnCreated(serializedData);
 			m_serializedData = serializedData;
@@ -48,17 +67,53 @@ namespace HistoricBuildings
 				if (m_serializedData != null) {
 
 					byte[] data2 = m_serializedData.LoadData(HISTORICS_VERSION_ID);
-					if (data2 != null) {
-						BinaryFormatter bFormatter = new BinaryFormatter();
-						MemoryStream mStream       = new MemoryStream(data2);
-						s_savedDataVersion = (int)bFormatter.Deserialize(mStream);
+                    if (data2 != null)
+                    {
+                        BinaryFormatter bFormatter = new BinaryFormatter();
+                        MemoryStream mStream = new MemoryStream(data2);
+                        s_savedDataVersion = (int)bFormatter.Deserialize(mStream);
 
 
-					} else {
-						//save had no data
+                    }
+                    else
+                    {
+                        //save had no data
 
                         //attempt recover data from ResilientOwners districts
-					}
+
+                        /*CODebug.Log(LogChannel.Modding, Mod.modName + " - attempt recover data from ResilientOwners districts");
+
+                        int saved_data_version = 0;
+                        byte[] data3 = m_serializedData.LoadData(RESILIENTS_VERSION_ID);
+                        if (data3 != null)
+                        {
+                            BinaryFormatter bFormatter = new BinaryFormatter();
+                            MemoryStream mStream = new MemoryStream(data3);
+                            saved_data_version = (int)bFormatter.Deserialize(mStream);
+                        }
+
+                        if (saved_data_version == 3)
+                        {
+                            byte[] data4 = m_serializedData.LoadData(RESILIENTS_DISTRICTS_ID);
+                            if (data4 != null)
+                            {
+                                BinaryFormatter bFormatter = new BinaryFormatter();
+                                MemoryStream mStream = new MemoryStream(data4);
+                                List < System.Object > legacyListAnon = (List<System.Object>)bFormatter.Deserialize(mStream);
+                                List<ResilientDistrict> legacyList = legacyListAnon.Cast<ResilientDistrict>().ToList();
+                                s_districts = new Dictionary < byte, ushort>();
+                                foreach (ResilientDistrict entry in legacyList)
+                                {
+                                    s_districts.Add(entry.districtID, 0);
+                                }
+                                CODebug.Log(LogChannel.Modding, Mod.modName + " - successful loading districts data from resilient owners");
+                            }
+                            else
+                            {
+
+                            }
+                        }*/
+                    }
 
 					if(s_savedDataVersion >= 0 && s_savedDataVersion <= SAVE_DATA_VERSION)
 					{
@@ -92,8 +147,7 @@ namespace HistoricBuildings
                             MemoryStream mStream = new MemoryStream(data);
                             switch (s_savedDataVersion)
                             {
-                                case 2:
-                                case 3:
+                                case 1:
                                     Settings.inst = (ResilientSettings) bFormatter.Deserialize(mStream);
                                     break;
                             }

@@ -27,7 +27,7 @@ namespace HistoricBuildings
             //Mod.updateSettingsPanel(); //update settings after loading city
 
             //create data object
-            m_infoObject = new GameObject(Mod.modName);
+            m_infoObject = new GameObject(Mod.modID);
 			m_info = m_infoObject.AddComponent<HistoricBuildings>();
 			if(BookKeeper.s_buildings != null)
 				m_info.buildings = BookKeeper.s_buildings;

@@ -27,11 +27,9 @@ namespace HistoricBuildings
 
         ZonedBuildingWorldInfoPanel m_zonedBuildingInfoPanel;
         StatesButton m_historicStateButton1;
-        UICheckBox m_historicCheckBox1;
 
         DistrictWorldInfoPanel m_districtInfoPanel;
         StatesButton m_historicStateButton2;
-        UICheckBox m_historicCheckBox2;
 
         ushort m_currentSelectedBuildingID;
         byte m_currentSelectedDistrictID;
@@ -59,29 +57,32 @@ namespace HistoricBuildings
 
         void AddComponents()
         {
-            m_historicCheckBox1 = UITemplateManager.Get("OptionsCheckBoxTemplate") as UICheckBox;
+            int spriteWidth = 32;
+            int spriteHeight = 32;
+            string[] tooltips = {
+                Localization.trad.GetTooltipOff(),
+                 Localization.trad.GetTooltipHistoryOn()
+            };
+            m_historicStateButton1 = new StatesButton(m_zonedBuildingInfoPanel.component, spriteWidth, spriteHeight, 2, "icons.historic.png", "HistoricBuildings", tooltips);
 
-            m_zonedBuildingInfoPanel.component.AttachUIComponent(m_historicCheckBox1.gameObject);
-            m_historicCheckBox1.text = "Historic";
-            m_historicCheckBox1.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopLeft);
-            m_historicCheckBox1.relativePosition += new Vector3(350f, 130f, 0f);
+            m_historicStateButton1.msb.eventActiveStateIndexChanged += (component, value) => {
 
-            m_historicCheckBox1.eventCheckChanged += (component, value) =>
-            {
                 if (!m_allowEvents)
                     return;
 
-                if (value)
+                switch (value)
                 {
-                    m_info.AddBuilding(m_currentSelectedBuildingID);
-                }
-                else
-                {
-                    m_info.RemoveBuilding(m_currentSelectedBuildingID);
+                    case 0:
+                        m_info.RemoveBuilding(m_currentSelectedBuildingID);
+                        break;
+                    case 1:
+                        m_info.AddBuilding(m_currentSelectedBuildingID);
+                        break;
                 }
             };
-            
-            //m_zonedBuildingInfoPanel.m_IsEmbbeded = true;//one of the condition call to OnPositionChanged, ensure it
+            m_historicStateButton1.msb.AlignTo(m_zonedBuildingInfoPanel.component, UIAlignAnchor.TopRight);
+            m_historicStateButton1.msb.relativePosition += new Vector3(-45f, 80f, 0f);
+
             m_zonedBuildingInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
             {
                 if (m_zonedBuildingInfoPanel.component.isVisible)
@@ -89,40 +90,37 @@ namespace HistoricBuildings
             };
 
             m_zonedBuildingInfoPanel.component.eventOpacityChanged += (inst1, inst2) =>
-             {
-                 if (m_zonedBuildingInfoPanel.component.isVisible)
-                     OnSelected();
-             };
+            {
+                if (m_zonedBuildingInfoPanel.component.isVisible)
+                    OnSelected();
+            };
 
             // district panel modifications
 
-            m_historicCheckBox2 = UITemplateManager.Get("OptionsCheckBoxTemplate") as UICheckBox;
+            string[] tooltips2 = {
+                Localization.trad.GetTooltipDistrictOff(),
+                Localization.trad.GetTooltipDistrictOn()
+            };
+            m_historicStateButton2 = new StatesButton(m_districtInfoPanel.component, spriteWidth, spriteHeight, 2, "icons.historic.png", "HistoricDistricts", tooltips2);
 
-            m_districtInfoPanel.component.AttachUIComponent(m_historicCheckBox2.gameObject);
-            m_historicCheckBox2.text = "Historic";
-            m_historicCheckBox2.AlignTo(m_districtInfoPanel.component, UIAlignAnchor.TopLeft);
-            m_historicCheckBox2.relativePosition += new Vector3(200f, 200f, 0f);
-            m_historicCheckBox2.size = new Vector3(50f, 5f, 0f);
-            m_historicCheckBox2.label.textScale = 0.5f;
-            m_historicCheckBox2.label.textColor = Color.cyan;
-            m_historicCheckBox2.checkedBoxObject.size = new Vector3(10f, 10f, 0f);
+            m_historicStateButton2.msb.eventActiveStateIndexChanged += (component, value) => {
 
-            m_historicCheckBox2.eventCheckChanged += (component, value) =>
-            {
                 if (!m_allowEvents)
                     return;
 
-                if (value)
+                switch (value)
                 {
-                    m_info.AddDistrict(m_currentSelectedDistrictID);
-                }
-                else
-                {
-                    m_info.RemoveDistrict(m_currentSelectedDistrictID);
+                    case 0:
+                        m_info.RemoveDistrict(m_currentSelectedDistrictID);
+                        break;
+                    case 1:
+                        m_info.AddDistrict(m_currentSelectedDistrictID);
+                        break;
                 }
             };
+            m_historicStateButton2.msb.AlignTo(m_districtInfoPanel.component, UIAlignAnchor.TopRight);
+            m_historicStateButton2.msb.relativePosition += new Vector3(-15f, 90f, 0f);
 
-            //m_zonedBuildingInfoPanel.m_IsEmbbeded = true;//one of the condition call to OnPositionChanged, ensure it
             m_districtInfoPanel.component.eventPositionChanged += (inst1, inst2) =>
             {
                 if (m_districtInfoPanel.component.isVisible)
@@ -162,13 +160,11 @@ namespace HistoricBuildings
             m_allowEvents = false;
             if (m_info.buildings.ContainsKey(m_currentSelectedBuildingID))
             {
-                m_historicCheckBox1.isChecked = true;
-                //m_historicStateButton1.SetState(1);
+                m_historicStateButton1.SetState(1);
             }
             else
             {
-                m_historicCheckBox1.isChecked = false;
-                //m_historicStateButton1.SetState(0);
+                m_historicStateButton1.SetState(0);
             }
             m_allowEvents = true;
         }
@@ -192,13 +188,11 @@ namespace HistoricBuildings
             m_allowEvents = false;
             if (m_info.districts.ContainsKey(m_currentSelectedDistrictID))
             {
-                //m_historicStateButton2.SetState(1);
-                m_historicCheckBox2.isChecked = true;
+                m_historicStateButton2.SetState(1);
             }
             else
             {
-                //m_historicStateButton2.SetState(0);
-                m_historicCheckBox2.isChecked = false;
+                m_historicStateButton2.SetState(0);
             }
             m_allowEvents = true;
         }

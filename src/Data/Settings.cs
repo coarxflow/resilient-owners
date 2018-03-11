@@ -15,7 +15,7 @@ namespace HistoricBuildings
         {
             inst = new ResilientSettings();
 
-            inst.noAbandonment = true;
+            inst.noAbandonment = false;
             inst.extinguishFires = true;
         }
     }

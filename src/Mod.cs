@@ -21,7 +21,7 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion ("1.2.2")]
+[assembly: AssemblyVersion ("1.0.0")]
 
 namespace HistoricBuildings {
     public class Mod: IUserMod {
@@ -75,7 +75,7 @@ namespace HistoricBuildings {
 
         public static HistoricBuildings s_info;
 
-        static UICheckBox listResidentsSetting;
+        static UICheckBox abandonmentSetting;
         static UICheckBox extinguishFiresSetting;
 
         public void OnSettingsUI(UIHelperBase helper)
@@ -87,15 +87,15 @@ namespace HistoricBuildings {
             //per city settings
             Settings.defaultSettings();
 
-            /*listResidentsSetting = (UICheckBox) helper.AddCheckbox(Localization.trad.GetResidentsListingSetting(), Settings.inst.listResidentsAndWorkers, toggleResidentsListingSetting);
+            abandonmentSetting = (UICheckBox)helper.AddCheckbox(Localization.trad.GetAbandonmentSetting(), Settings.inst.noAbandonment, toggleAbandonmentSetting);
 
-            helper.AddSpace(20);
+            helper.AddSpace(40);
 
             extinguishFiresSetting = (UICheckBox)helper.AddCheckbox(Localization.trad.GetExtinguishFiresSetting(), Settings.inst.extinguishFires, toggleExtinguishFiresSetting);
 
             helper.AddSpace(40);
 
-            helper.AddGroup(Localization.trad.GetSettingsPerCities());*/
+            helper.AddGroup(Localization.trad.GetSettingsPerCities());
 
         }
 
@@ -105,9 +105,15 @@ namespace HistoricBuildings {
             Settings.inst.extinguishFires = toggle;
         }
 
+        public void toggleAbandonmentSetting(bool toggle)
+        {
+            Settings.inst.noAbandonment = toggle;
+        }
+
         public static void updateSettingsPanel()
         {
             extinguishFiresSetting.isChecked = Settings.inst.extinguishFires;
+            abandonmentSetting.isChecked = Settings.inst.noAbandonment;
         }
     }
 }

@@ -49,15 +49,12 @@
     <Compile Include="src\UI\UIMultiLineTextField.cs" />
     <Compile Include="src\UI\HistoricUI.cs" />
     <Compile Include="src\Extensions\BookKeeper.cs" />
-    <Compile Include="src\UI\UIGoodsWrapper.cs" />
     <Compile Include="src\UI\StatesButton.cs" />
     <Compile Include="src\Localization\English.cs" />
     <Compile Include="src\Localization\Localization.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="icons\star.png" />
-    <EmbeddedResource Include="icons\book.png" />
-    <EmbeddedResource Include="icons\book_bckgrnd.png" />
+    <EmbeddedResource Include="icons\historic.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">

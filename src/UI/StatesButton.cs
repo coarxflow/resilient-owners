@@ -54,7 +54,7 @@ namespace HistoricBuildings
 			try
 			{ // LoadTexture
 				System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-				System.IO.Stream textureStream = assembly.GetManifestResourceStream("ResilientOwners." + textureFile);
+				System.IO.Stream textureStream = assembly.GetManifestResourceStream("HistoricBuildings." + textureFile);
 
 				byte[] buf = new byte[textureStream.Length];  //declare arraysize
 				textureStream.Read(buf, 0, buf.Length); // read from stream to byte array
@@ -63,9 +63,9 @@ namespace HistoricBuildings
 
 				tex.Apply(true, true);
 			}
-			catch
+			catch (Exception ex)
 			{
-				CODebug.Log(LogChannel.Modding, "error opening texture file");
+				CODebug.Log(LogChannel.Modding, "error opening texture file: "+ex.Message);
 			}
 
 			UITextureAtlas atlas = ScriptableObject.CreateInstance<UITextureAtlas>();

@@ -22,11 +22,6 @@ namespace HistoricBuildings
 
 		public override void OnReleased()
 		{
-			var go = GameObject.Find("ResilientBuildings");
-			if (go != null)
-			{
-				UnityEngine.Object.Destroy(go);
-			}
 		}
 
 		/*public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
